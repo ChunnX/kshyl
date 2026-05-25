@@ -1,0 +1,37 @@
+<view class="page page-soft record safe-bottom">
+  <view>
+    <view class="eyebrow">{{isRecording ? '正在录音' : '准备开始'}}</view>
+    <view class="title">{{statusTitle}}</view>
+    <view class="subtitle">{{prompt}}</view>
+  </view>
+
+  <view class="record-stage">
+    <view class="record-circle {{isRecording ? 'recording' : ''}}">
+      <image wx:if="{{!isRecording}}" class="record-icon" src="/assets/icons/mic.svg" mode="aspectFit" />
+      <image wx:else class="record-icon" src="/assets/icons/stop.svg" mode="aspectFit" />
+      <text>{{isRecording ? '正在听' : '准备好了'}}</text>
+    </view>
+
+    <view class="wave-row {{isRecording ? 'active' : ''}}">
+      <view class="wave wave-1"></view>
+      <view class="wave wave-2"></view>
+      <view class="wave wave-3"></view>
+      <view class="wave wave-4"></view>
+      <view class="wave wave-5"></view>
+    </view>
+
+    <view class="record-tip">{{isRecording ? '靠近手机一点，说慢些也没关系' : '一次最多可以讲 10 分钟'}}</view>
+  </view>
+
+  <view class="actions">
+    <button wx:if="{{!isRecording}}" class="primary-button" bindtap="startRecord">
+      <image class="button-icon" src="/assets/icons/mic.svg" mode="aspectFit" />
+      开始说
+    </button>
+    <button wx:if="{{isRecording}}" class="primary-button danger-button" bindtap="stopRecord">
+      <image class="button-icon" src="/assets/icons/stop.svg" mode="aspectFit" />
+      我说完了
+    </button>
+    <button class="quiet-button" bindtap="goHome">先不讲了</button>
+  </view>
+</view>

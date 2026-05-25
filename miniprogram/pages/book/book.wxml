@@ -1,0 +1,17 @@
+<view class="page page-soft safe-bottom">
+  <view class="eyebrow">打印成书</view>
+  <view class="title">把故事整理成一本书</view>
+  <view class="subtitle">适合家人先预览，再导出 PDF 或 DOCX 去打印。</view>
+
+  <image class="hero-image book-image" src="/assets/illustrations/book-preview.svg" mode="aspectFit" />
+
+  <view class="panel">
+    <view class="section-title">当前书稿</view>
+    <view class="book-result">{{result}}</view>
+  </view>
+
+  <button class="primary-button action" bindtap="exportBook">
+    <image class="button-icon" src="/assets/icons/book-white.svg" mode="aspectFit" />
+    生成书稿
+  </button>
+</view>

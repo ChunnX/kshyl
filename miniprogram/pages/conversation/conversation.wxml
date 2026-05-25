@@ -1,0 +1,60 @@
+<view class="page page-soft conversation safe-bottom">
+  <view>
+    <view class="eyebrow">语音陪聊</view>
+    <view class="title">像朋友一样慢慢聊</view>
+    <view class="subtitle">AI 会先了解大致经历，再自然追问细节。前几天讲过的内容，也会继续记得。</view>
+  </view>
+
+  <view class="mode-switch">
+    <view class="mode-option {{mode === 'dialogue' ? 'active' : ''}}" bindtap="setDialogueMode">
+      <view class="mode-title">对话模式</view>
+      <view class="mode-desc">适合整理生平和故事</view>
+    </view>
+    <view class="mode-option {{mode === 'vent' ? 'active' : ''}}" bindtap="setVentMode">
+      <view class="mode-title">倾诉模式</view>
+      <view class="mode-desc">适合先说心里话</view>
+    </view>
+  </view>
+
+  <view class="dialect-row">
+    <view class="dialect-pill {{dialect === 'auto' ? 'active' : ''}}" bindtap="setDialectAuto">自动识别方言</view>
+    <view class="dialect-pill {{dialect === 'yue' ? 'active' : ''}}" bindtap="setDialectYue">粤语</view>
+    <view class="dialect-pill {{dialect === 'sichuan' ? 'active' : ''}}" bindtap="setDialectSichuan">四川话</view>
+  </view>
+
+  <view class="realtime-status">
+    <view class="status-dot {{isRecording ? 'listening' : ''}}"></view>
+    <view class="status-copy">{{statusText}}</view>
+  </view>
+
+  <view wx:if="{{liveTranscript}}" class="live-panel">
+    <view class="live-label">实时识别</view>
+    <view class="live-text">{{liveTranscript}}</view>
+  </view>
+
+  <scroll-view class="message-list" scroll-y>
+    <view wx:for="{{messages}}" wx:key="id" class="message {{item.role}}">
+      <view class="message-label">{{item.role === 'assistant' ? 'AI' : '我'}}</view>
+      <view class="message-bubble">
+        <view class="message-text">{{item.text}}</view>
+        <view wx:if="{{item.nextQuestion}}" class="next-question">{{item.nextQuestion}}</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view wx:if="{{photoIds.length}}" class="photo-note">
+    已加入 {{photoIds.length}} 张老照片，这一轮会一起记下。
+  </view>
+
+  <view class="conversation-actions">
+    <button class="secondary-button" bindtap="addPhoto">加入老照片</button>
+    <button wx:if="{{!isRecording}}" class="primary-button" bindtap="startRecord">
+      <image class="button-icon" src="/assets/icons/mic.svg" mode="aspectFit" />
+      按下开始说
+    </button>
+    <button wx:else class="primary-button finish-button" bindtap="stopRecord">
+      <image class="button-icon" src="/assets/icons/stop.svg" mode="aspectFit" />
+      我说完了
+    </button>
+  </view>
+</view>

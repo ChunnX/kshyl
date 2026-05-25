@@ -1,0 +1,40 @@
+<view class="page page-soft safe-bottom">
+  <view class="eyebrow">故事库</view>
+  <view class="title">已经记下来的故事</view>
+  <view class="subtitle">点开一段，家人可以改错字、补时间和地点。</view>
+
+  <view wx:if="{{latestFollowUp}}" class="panel notice-panel">
+    <view class="status-row">
+      <view class="status-dot"></view>
+      <view class="section-title">可以接着问</view>
+    </view>
+    <view class="follow-text">{{latestFollowUp}}</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="panel large-text">正在读取...</view>
+
+  <view wx:for="{{stories}}" wx:key="id" class="story-card" bindtap="openReview" data-id="{{item.id}}">
+    <view class="story-card-head">
+      <view class="story-title">{{item.title}}</view>
+      <view class="tag">{{item.status === 'approved' ? '已校对' : '待校对'}}</view>
+    </view>
+    <view class="story-body">{{item.polishedText}}</view>
+  </view>
+
+  <view wx:if="{{!loading && stories.length === 0}}" class="empty-state">
+    <image class="empty-image" src="/assets/illustrations/story-stack.svg" mode="aspectFit" />
+    <view class="section-title">还没有故事</view>
+    <view class="quiet-text">今天讲第一段吧，短短几句话也很好。</view>
+  </view>
+
+  <view class="actions">
+    <button class="secondary-button" bindtap="goBook">
+      <image class="button-icon dark-icon" src="/assets/icons/book.svg" mode="aspectFit" />
+      生成书稿
+    </button>
+    <button class="secondary-button" bindtap="goChat">
+      <image class="button-icon dark-icon" src="/assets/icons/chat.svg" mode="aspectFit" />
+      纪念对话
+    </button>
+  </view>
+</view>

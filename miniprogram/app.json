@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/conversation/conversation",
+    "pages/record/record",
+    "pages/story/story",
+    "pages/family-review/family-review",
+    "pages/book/book",
+    "pages/chat/chat"
+  ],
+  "window": {
+    "navigationBarTitleText": "回忆录",
+    "navigationBarBackgroundColor": "#F0F9FF",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F0F9FF"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

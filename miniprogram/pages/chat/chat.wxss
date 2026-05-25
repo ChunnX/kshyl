@@ -1,0 +1,41 @@
+.chat-image {
+  height: 330rpx;
+}
+
+.consent-text {
+  margin-top: 14rpx;
+}
+
+.reply-text {
+  margin-top: 18rpx;
+  font-size: 34rpx;
+  line-height: 1.68;
+  color: #123f55;
+}
+
+.input-label {
+  margin-top: 34rpx;
+  margin-bottom: 16rpx;
+  font-size: 32rpx;
+  line-height: 1.4;
+  font-weight: 800;
+  color: #082f49;
+}
+
+.input {
+  width: 100%;
+  min-height: 190rpx;
+  padding: 26rpx;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 3rpx solid #7dd3fc;
+  border-radius: 18rpx;
+  font-size: 34rpx;
+  line-height: 1.64;
+  color: #123f55;
+  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+}
+
+.action {
+  margin-top: 28rpx;
+}

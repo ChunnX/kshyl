@@ -1,0 +1,26 @@
+<view class="page page-soft safe-bottom">
+  <view class="eyebrow">纪念对话</view>
+  <view class="title">只和已确认的回忆聊天</view>
+  <view class="subtitle">这个功能必须先获得本人明确授权，回答也只基于已校对故事。</view>
+
+  <image class="hero-image chat-image" src="/assets/illustrations/chat-memory.svg" mode="aspectFit" />
+
+  <view wx:if="{{consentStatus !== 'granted'}}" class="panel notice-panel">
+    <view class="section-title">还没有开启授权</view>
+    <view class="quiet-text consent-text">正式版本会要求本人录制授权音频。当前按钮只用于开发调试。</view>
+  </view>
+
+  <view class="panel">
+    <view class="section-title">回答</view>
+    <view class="reply-text">{{reply}}</view>
+  </view>
+
+  <view class="input-label">想问些什么</view>
+  <textarea class="input" value="{{message}}" bindinput="onInput" placeholder="例如：小时候住在哪里？" />
+
+  <button wx:if="{{consentStatus !== 'granted'}}" class="primary-button action" bindtap="grantConsent">确认已获本人授权</button>
+  <button wx:else class="primary-button action" bindtap="send">
+    <image class="button-icon" src="/assets/icons/chat-white.svg" mode="aspectFit" />
+    发送
+  </button>
+</view>

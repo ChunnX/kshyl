@@ -1,0 +1,14 @@
+.book-image {
+  height: 360rpx;
+}
+
+.book-result {
+  margin-top: 18rpx;
+  font-size: 34rpx;
+  line-height: 1.68;
+  color: #123f55;
+}
+
+.action {
+  margin-top: 34rpx;
+}

@@ -1,0 +1,32 @@
+.check-icon {
+  width: 50rpx;
+  height: 50rpx;
+  flex: 0 0 auto;
+}
+
+.tip-text {
+  margin-top: 12rpx;
+}
+
+.editor-label {
+  margin-top: 34rpx;
+  margin-bottom: 16rpx;
+  font-size: 32rpx;
+  line-height: 1.4;
+  font-weight: 800;
+  color: #082f49;
+}
+
+.editor {
+  width: 100%;
+  min-height: 650rpx;
+  padding: 28rpx;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 3rpx solid #7dd3fc;
+  border-radius: 18rpx;
+  font-size: 34rpx;
+  line-height: 1.72;
+  color: #123f55;
+  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+}

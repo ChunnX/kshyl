@@ -1,0 +1,20 @@
+<view class="page page-soft safe-bottom">
+  <view class="eyebrow">家人校对</view>
+  <view class="title">把故事改准确</view>
+  <view class="subtitle">重点改错字、人名、地名和时间，不用把长辈的语气改没。</view>
+
+  <view class="panel notice-panel">
+    <view class="status-row">
+      <image class="check-icon" src="/assets/icons/check.svg" mode="aspectFit" />
+      <view class="section-title">校对建议</view>
+    </view>
+    <view class="quiet-text tip-text">保留口头表达，补清楚“谁、什么时候、在哪里”。</view>
+  </view>
+
+  <view class="editor-label">故事正文</view>
+  <textarea class="editor" value="{{content}}" bindinput="onInput" maxlength="-1" auto-height />
+
+  <view class="actions">
+    <button class="primary-button" bindtap="save">保存修改</button>
+  </view>
+</view>

@@ -1,0 +1,47 @@
+<view class="page page-soft home safe-bottom">
+  <view class="eyebrow">每天 5 分钟</view>
+  <view class="title">把声音和故事留下来</view>
+  <view class="subtitle">点一下就能开始说。AI 会帮忙整理，家人再慢慢校对。</view>
+
+  <image class="hero-image" src="/assets/illustrations/voice-memory.svg" mode="aspectFit" />
+
+  <view class="promise-row">
+    <view class="promise-item">
+      <view class="promise-number">1</view>
+      <view class="promise-text">说话</view>
+    </view>
+    <view class="promise-line"></view>
+    <view class="promise-item">
+      <view class="promise-number">2</view>
+      <view class="promise-text">整理</view>
+    </view>
+    <view class="promise-line"></view>
+    <view class="promise-item">
+      <view class="promise-number">3</view>
+      <view class="promise-text">成书</view>
+    </view>
+  </view>
+
+  <view class="trust-panel">
+    <view class="trust-item">
+      <view class="trust-dot"></view>
+      <view class="trust-text">默认只给家人看</view>
+    </view>
+    <view class="trust-item">
+      <view class="trust-dot"></view>
+      <view class="trust-text">声音克隆需本人授权</view>
+    </view>
+  </view>
+
+  <view class="actions">
+    <button class="primary-button" bindtap="goConversation">
+      <image class="button-icon" src="/assets/icons/chat-white.svg" mode="aspectFit" />
+      语音陪聊
+    </button>
+    <button class="primary-button" bindtap="goRecord">
+      <image class="button-icon" src="/assets/icons/mic.svg" mode="aspectFit" />
+      单独录一段
+    </button>
+    <button class="secondary-button" bindtap="goStories">看看已保存</button>
+  </view>
+</view>
