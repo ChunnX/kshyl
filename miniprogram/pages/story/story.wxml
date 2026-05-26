@@ -1,7 +1,7 @@
 <view class="page page-soft safe-bottom">
-  <view class="eyebrow">故事库</view>
-  <view class="title">已经记下来的故事</view>
-  <view class="subtitle">点开一段，家人可以改错字、补时间和地点。</view>
+  <view class="eyebrow">家庭记忆库</view>
+  <view class="title">已经记下来的片段</view>
+  <view class="subtitle">点开一段，家人可以改错字、补时间、地点和照片。</view>
 
   <view wx:if="{{latestFollowUp}}" class="panel notice-panel">
     <view class="status-row">

@@ -1,0 +1,22 @@
+<view class="page page-soft safe-bottom">
+  <view class="eyebrow">人物关系</view>
+  <view class="title">先定义家里的人</view>
+  <view class="subtitle">比如：大宝是儿子，妈妈是共同记录人，外婆是故事主角。</view>
+
+  <view class="form-card">
+    <view class="input-label">名字</view>
+    <input class="input" value="{{newName}}" bindinput="onNameInput" placeholder="例如：大宝" />
+    <view class="input-label">关系</view>
+    <input class="input" value="{{newRelation}}" bindinput="onRelationInput" placeholder="例如：儿子、妈妈、外婆" />
+    <button class="primary-button form-action" bindtap="createPerson">添加人物</button>
+  </view>
+
+  <view wx:for="{{people}}" wx:key="id" class="person-card" bindtap="openThemes" data-id="{{item.id}}" data-name="{{item.name}}">
+    <view>
+      <view class="person-name">{{item.name}}</view>
+      <view class="person-relation">{{item.relation || '家庭成员'}}</view>
+    </view>
+    <view class="tag">建主题</view>
+  </view>
+</view>
+

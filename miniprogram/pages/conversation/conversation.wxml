@@ -2,7 +2,7 @@
   <view>
     <view class="eyebrow">语音陪聊</view>
     <view class="title">像朋友一样慢慢聊</view>
-    <view class="subtitle">AI 会先了解大致经历，再自然追问细节。前几天讲过的内容，也会继续记得。</view>
+    <view class="subtitle">AI 会先了解大致经历，再自然追问细节。也可以聊孩子的成长、旅行、家庭日常。</view>
   </view>
 
   <view class="mode-switch">
@@ -43,17 +43,20 @@
   </scroll-view>
 
   <view wx:if="{{photoIds.length}}" class="photo-note">
-    已加入 {{photoIds.length}} 张老照片，这一轮会一起记下。
+    已加入 {{photoIds.length}} 张照片，这一轮会一起记下。
   </view>
 
   <view class="conversation-actions">
-    <button class="secondary-button" bindtap="addPhoto">加入老照片</button>
+    <button class="secondary-button" bindtap="addPhoto">
+      <image class="button-icon dark-icon" src="/assets/icons/photo.svg" mode="aspectFit" />
+      加入照片
+    </button>
     <button wx:if="{{!isRecording}}" class="primary-button" bindtap="startRecord">
-      <image class="button-icon" src="/assets/icons/mic.svg" mode="aspectFit" />
+      <image class="button-icon" src="/assets/icons/mic-white.svg" mode="aspectFit" />
       按下开始说
     </button>
     <button wx:else class="primary-button finish-button" bindtap="stopRecord">
-      <image class="button-icon" src="/assets/icons/stop.svg" mode="aspectFit" />
+      <image class="button-icon" src="/assets/icons/stop-white.svg" mode="aspectFit" />
       我说完了
     </button>
   </view>

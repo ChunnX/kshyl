@@ -33,6 +33,54 @@ module.exports = {
       data: { consentStatus }
     });
   },
+  listPeople() {
+    return request('/persons');
+  },
+  createPerson(payload) {
+    return request('/persons', {
+      method: 'POST',
+      data: payload
+    });
+  },
+  listThemes(personId) {
+    return request(`/persons/${personId}/themes`);
+  },
+  createTheme(personId, payload) {
+    return request(`/persons/${personId}/themes`, {
+      method: 'POST',
+      data: payload
+    });
+  },
+  getTheme(themeId) {
+    return request(`/themes/${themeId}`);
+  },
+  addThemeCollaborator(themeId, payload) {
+    return request(`/themes/${themeId}/collaborators`, {
+      method: 'POST',
+      data: payload
+    });
+  },
+  inviteToTheme(themeId, payload) {
+    return request(`/themes/${themeId}/invitations`, {
+      method: 'POST',
+      data: payload
+    });
+  },
+  inviteToStory(storyId, payload) {
+    return request(`/stories/${storyId}/invitations`, {
+      method: 'POST',
+      data: payload
+    });
+  },
+  getInvitation(inviteCode) {
+    return request(`/invitations/${inviteCode}`);
+  },
+  submitContribution(inviteCode, payload) {
+    return request(`/invitations/${inviteCode}/contributions`, {
+      method: 'POST',
+      data: payload
+    });
+  },
   getPersonStories(personId) {
     return request(`/persons/${personId}/stories`);
   },

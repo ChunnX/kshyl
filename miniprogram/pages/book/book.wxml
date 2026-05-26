@@ -1,7 +1,7 @@
 <view class="page page-soft safe-bottom">
-  <view class="eyebrow">打印成书</view>
-  <view class="title">把故事整理成一本书</view>
-  <view class="subtitle">适合家人先预览，再导出 PDF 或 DOCX 去打印。</view>
+  <view class="eyebrow">整理成册</view>
+  <view class="title">把家庭记忆整理成一本书</view>
+  <view class="subtitle">可以是长辈回忆录，也可以是孩子成长册，先由家人预览校对。</view>
 
   <image class="hero-image book-image" src="/assets/illustrations/book-preview.svg" mode="aspectFit" />
 

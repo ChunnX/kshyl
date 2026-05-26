@@ -22,7 +22,11 @@ const initialState = {
   voiceProfiles: [],
   conversations: [],
   conversationMessages: [],
-  photos: []
+  photos: [],
+  themes: [],
+  themeCollaborators: [],
+  invitations: [],
+  contributions: []
 };
 
 const dataFilePath = path.resolve(process.cwd(), env.dataFile);
@@ -142,6 +146,28 @@ function updatePerson(id, patch) {
   return person;
 }
 
+function createPerson(data) {
+  const person = {
+    id: randomUUID(),
+    ownerUserId: data.ownerUserId || 'user_demo_001',
+    name: data.name,
+    relation: data.relation || '',
+    kind: data.kind || 'family',
+    consentStatus: 'pending',
+    voiceCloneStatus: 'disabled',
+    createdAt: new Date().toISOString()
+  };
+  state.people.push(person);
+  saveState();
+  return person;
+}
+
+function listPeople(ownerUserId = 'user_demo_001') {
+  return state.people
+    .filter((person) => !person.ownerUserId || person.ownerUserId === ownerUserId)
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+}
+
 function createBook(data) {
   const book = {
     id: randomUUID(),
@@ -240,6 +266,143 @@ function listPhotos(filter = {}) {
   });
 }
 
+function createTheme(data) {
+  const theme = {
+    id: randomUUID(),
+    ownerUserId: data.ownerUserId || 'user_demo_001',
+    personId: data.personId || null,
+    title: data.title,
+    description: data.description || '',
+    mode: data.mode || 'solo',
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  state.themes.push(theme);
+  saveState();
+  return theme;
+}
+
+function getTheme(id) {
+  return state.themes.find((theme) => theme.id === id);
+}
+
+function listThemes(filter = {}) {
+  return state.themes
+    .filter((theme) => {
+      if (filter.personId && theme.personId !== filter.personId) {
+        return false;
+      }
+      if (filter.ownerUserId && theme.ownerUserId !== filter.ownerUserId) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+}
+
+function updateTheme(id, patch) {
+  const theme = getTheme(id);
+  if (!theme) {
+    return null;
+  }
+  Object.assign(theme, patch, {
+    updatedAt: new Date().toISOString()
+  });
+  saveState();
+  return theme;
+}
+
+function addThemeCollaborator(data) {
+  const collaborator = {
+    id: randomUUID(),
+    themeId: data.themeId,
+    name: data.name,
+    relation: data.relation || '',
+    role: data.role || 'contributor',
+    status: data.status || 'invited',
+    createdAt: new Date().toISOString()
+  };
+  state.themeCollaborators.push(collaborator);
+  saveState();
+  return collaborator;
+}
+
+function listThemeCollaborators(themeId) {
+  return state.themeCollaborators.filter((collaborator) => collaborator.themeId === themeId);
+}
+
+function createInvitation(data) {
+  const invitation = {
+    id: randomUUID(),
+    inviteCode: randomUUID().slice(0, 8),
+    type: data.type || 'theme',
+    themeId: data.themeId || null,
+    storyId: data.storyId || null,
+    targetName: data.targetName,
+    relation: data.relation || '',
+    prompt: data.prompt || '',
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  };
+  state.invitations.push(invitation);
+  saveState();
+  return invitation;
+}
+
+function getInvitationByCode(inviteCode) {
+  return state.invitations.find((invitation) => invitation.inviteCode === inviteCode);
+}
+
+function listInvitations(filter = {}) {
+  return state.invitations
+    .filter((invitation) => {
+      if (filter.themeId && invitation.themeId !== filter.themeId) {
+        return false;
+      }
+      if (filter.storyId && invitation.storyId !== filter.storyId) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+}
+
+function createContribution(data) {
+  const contribution = {
+    id: randomUUID(),
+    invitationId: data.invitationId,
+    themeId: data.themeId || null,
+    storyId: data.storyId || null,
+    contributorName: data.contributorName,
+    text: data.text,
+    status: 'submitted',
+    createdAt: new Date().toISOString()
+  };
+  state.contributions.push(contribution);
+
+  const invitation = state.invitations.find((item) => item.id === data.invitationId);
+  if (invitation) {
+    invitation.status = 'submitted';
+    invitation.updatedAt = new Date().toISOString();
+  }
+
+  saveState();
+  return contribution;
+}
+
+function listContributions(filter = {}) {
+  return state.contributions.filter((contribution) => {
+    if (filter.themeId && contribution.themeId !== filter.themeId) {
+      return false;
+    }
+    if (filter.storyId && contribution.storyId !== filter.storyId) {
+      return false;
+    }
+    return true;
+  });
+}
+
 module.exports = {
   createRecording,
   getRecording,
@@ -249,6 +412,8 @@ module.exports = {
   getStory,
   updateStory,
   getPerson,
+  createPerson,
+  listPeople,
   updatePerson,
   createBook,
   listBooks,
@@ -259,5 +424,16 @@ module.exports = {
   addConversationMessage,
   listConversationMessages,
   createPhoto,
-  listPhotos
+  listPhotos,
+  createTheme,
+  getTheme,
+  listThemes,
+  updateTheme,
+  addThemeCollaborator,
+  listThemeCollaborators,
+  createInvitation,
+  getInvitationByCode,
+  listInvitations,
+  createContribution,
+  listContributions
 };

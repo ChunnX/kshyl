@@ -124,6 +124,64 @@ async function main() {
 
     await smokeRealtimeConversation(baseUrl);
 
+    const child = await request(baseUrl, '/api/persons', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: '大宝',
+        relation: '儿子',
+        kind: 'child'
+      })
+    });
+    assert(child.response.status === 201, 'person creation failed');
+
+    const theme = await request(baseUrl, `/api/persons/${child.data.person.id}/themes`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title: '三岁这一年',
+        description: '记录孩子三岁时说过的话和成长瞬间',
+        mode: 'co_create'
+      })
+    });
+    assert(theme.response.status === 201, 'theme creation failed');
+
+    const collaborator = await request(baseUrl, `/api/themes/${theme.data.theme.id}/collaborators`, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: '妈妈',
+        relation: '母亲'
+      })
+    });
+    assert(collaborator.response.status === 201, 'theme collaborator creation failed');
+
+    const themeInvite = await request(baseUrl, `/api/themes/${theme.data.theme.id}/invitations`, {
+      method: 'POST',
+      body: JSON.stringify({
+        targetName: '妈妈',
+        relation: '母亲',
+        prompt: '请补充大宝第一次去幼儿园那天的细节。'
+      })
+    });
+    assert(themeInvite.response.status === 201, 'theme invitation failed');
+    assert(themeInvite.data.sharePath.includes(themeInvite.data.invitation.inviteCode), 'share path missing invite code');
+
+    const contribution = await request(baseUrl, `/api/invitations/${themeInvite.data.invitation.inviteCode}/contributions`, {
+      method: 'POST',
+      body: JSON.stringify({
+        contributorName: '妈妈',
+        text: '那天他背着蓝色书包，进门前还回头看了一眼。'
+      })
+    });
+    assert(contribution.response.status === 201, 'contribution submit failed');
+
+    const storyInvite = await request(baseUrl, `/api/stories/${storyId}/invitations`, {
+      method: 'POST',
+      body: JSON.stringify({
+        targetName: '舅舅',
+        prompt: '请补充这段故事里你记得的细节。'
+      })
+    });
+    assert(storyInvite.response.status === 201, 'story invitation failed');
+
     console.log('Smoke test passed');
   } finally {
     server.close();

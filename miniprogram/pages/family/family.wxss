@@ -1,0 +1,51 @@
+.form-card,
+.person-card {
+  margin-top: 28rpx;
+  padding: 28rpx;
+  background: #ffffff;
+  border: 2rpx solid #bae6fd;
+  border-radius: 18rpx;
+  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+}
+
+.input-label {
+  margin-top: 20rpx;
+  margin-bottom: 12rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #082f49;
+}
+
+.input {
+  min-height: 92rpx;
+  padding: 0 24rpx;
+  border-radius: 16rpx;
+  border: 3rpx solid #7dd3fc;
+  background: #f8fcff;
+  font-size: 32rpx;
+  color: #123f55;
+}
+
+.form-action {
+  margin-top: 28rpx;
+}
+
+.person-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.person-name {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #082f49;
+}
+
+.person-relation {
+  margin-top: 8rpx;
+  font-size: 30rpx;
+  color: #315f74;
+}
+

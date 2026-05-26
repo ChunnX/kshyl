@@ -5,6 +5,28 @@ const llm = require('../services/llm.service');
 
 const router = express.Router();
 
+router.get('/', (req, res) => {
+  res.json({
+    people: store.listPeople('user_demo_001')
+  });
+});
+
+router.post('/', (req, res) => {
+  if (!req.body.name) {
+    res.status(400).json({ message: 'name is required' });
+    return;
+  }
+
+  const person = store.createPerson({
+    name: req.body.name,
+    relation: req.body.relation,
+    kind: req.body.kind,
+    ownerUserId: 'user_demo_001'
+  });
+
+  res.status(201).json({ person });
+});
+
 router.get('/:personId', (req, res) => {
   const person = store.getPerson(req.params.personId);
   if (!person) {
@@ -39,6 +61,29 @@ router.get('/:personId/stories', (req, res) => {
   res.json({
     stories: store.listStories(req.params.personId)
   });
+});
+
+router.get('/:personId/themes', (req, res) => {
+  res.json({
+    themes: store.listThemes({ personId: req.params.personId })
+  });
+});
+
+router.post('/:personId/themes', (req, res) => {
+  if (!req.body.title) {
+    res.status(400).json({ message: 'title is required' });
+    return;
+  }
+
+  const theme = store.createTheme({
+    personId: req.params.personId,
+    title: req.body.title,
+    description: req.body.description,
+    mode: req.body.mode || 'solo',
+    ownerUserId: 'user_demo_001'
+  });
+
+  res.status(201).json({ theme });
 });
 
 router.post('/:personId/book/export', async (req, res, next) => {

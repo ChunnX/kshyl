@@ -15,5 +15,11 @@ Page({
     wx.navigateTo({
       url: '/pages/story/story'
     });
+  },
+
+  goFamily() {
+    wx.navigateTo({
+      url: '/pages/family/family'
+    });
   }
 });

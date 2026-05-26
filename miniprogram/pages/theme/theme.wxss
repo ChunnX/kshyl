@@ -1,0 +1,94 @@
+.form-card,
+.theme-card {
+  margin-top: 28rpx;
+  padding: 28rpx;
+  background: #ffffff;
+  border: 2rpx solid #bae6fd;
+  border-radius: 18rpx;
+  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+}
+
+.input-label {
+  margin-top: 20rpx;
+  margin-bottom: 12rpx;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #082f49;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 24rpx;
+  border-radius: 16rpx;
+  border: 3rpx solid #7dd3fc;
+  background: #f8fcff;
+  font-size: 32rpx;
+  color: #123f55;
+}
+
+.input {
+  min-height: 92rpx;
+}
+
+.textarea {
+  min-height: 180rpx;
+  padding-top: 22rpx;
+  line-height: 1.55;
+}
+
+.mode-row {
+  margin-top: 24rpx;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18rpx;
+}
+
+.mode-pill {
+  min-height: 82rpx;
+  border-radius: 16rpx;
+  border: 3rpx solid #bae6fd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #075985;
+}
+
+.mode-pill.active {
+  background: #0369a1;
+  border-color: #0369a1;
+  color: #ffffff;
+}
+
+.form-action {
+  margin-top: 28rpx;
+}
+
+.theme-title {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #082f49;
+}
+
+.theme-desc {
+  margin-top: 12rpx;
+  margin-bottom: 18rpx;
+  font-size: 30rpx;
+  line-height: 1.55;
+  color: #315f74;
+}
+
+.share-box {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 16rpx;
+  background: #ecfdf5;
+  color: #14532d;
+  font-size: 28rpx;
+  line-height: 1.5;
+  word-break: break-all;
+}
+

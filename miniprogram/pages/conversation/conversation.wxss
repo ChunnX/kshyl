@@ -186,3 +186,8 @@
 .finish-button {
   background: #15803d;
 }
+
+.dark-icon {
+  background: #e0f2fe;
+  border-radius: 50%;
+}

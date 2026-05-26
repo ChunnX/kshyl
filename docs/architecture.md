@@ -14,7 +14,7 @@
 
 ```mermaid
 flowchart TD
-    A["微信小程序老人端"] --> B["Express API"]
+    A["微信小程序记录端"] --> B["Express API"]
     C["微信小程序家人端"] --> B
     B --> D["录音上传"]
     B --> E["故事管理"]
@@ -34,7 +34,7 @@ flowchart TD
 
 ## 核心链路
 
-1. 老人点击“开始讲故事”并录音。
+1. 使用者点击语音记录入口并录音。
 2. 小程序上传音频到 `/api/recordings/upload`。
 3. 后端创建 recording，并调用 ASR 得到 transcript。
 4. 大模型将 transcript 整理为 story 草稿。
@@ -48,4 +48,3 @@ flowchart TD
 - `llm.service.js` 接入真实大模型，并增加 prompt 模板。
 - `book-export.service.js` 接入 DOCX / PDF 生成。
 - `voice-clone.service.js` 在完成本人授权流程后再启用。
-

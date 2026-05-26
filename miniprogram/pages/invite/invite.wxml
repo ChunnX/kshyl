@@ -1,0 +1,14 @@
+<view class="page page-soft safe-bottom">
+  <view class="eyebrow">邀请补充</view>
+  <view class="title">帮家人补一段记忆</view>
+  <view class="subtitle">{{invitation.prompt || '写下你知道的细节，会进入家庭记忆里等待整理。'}}</view>
+
+  <view class="form-card">
+    <view class="input-label">你的名字</view>
+    <input class="input" value="{{contributorName}}" bindinput="onNameInput" placeholder="例如：妈妈" />
+    <view class="input-label">补充内容</view>
+    <textarea class="textarea" value="{{text}}" bindinput="onTextInput" placeholder="可以写时间、地点、人物、当时发生了什么" />
+    <button class="primary-button form-action" bindtap="submit">提交补充</button>
+  </view>
+</view>
+

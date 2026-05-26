@@ -136,11 +136,11 @@
 
 后端会转写录音、保存用户消息、生成故事草稿，并返回 AI 回应和下一句追问。
 
-## 老照片
+## 照片
 
 `POST /api/photos/upload`
 
-表单上传照片。
+表单上传照片，可用于老照片、孩子成长照、家庭旅行照等场景。
 
 字段：
 
@@ -153,3 +153,86 @@
 `GET /api/photos/persons/:personId/photos`
 
 返回某个人上传过的照片。
+
+## 人物关系、主题与共创
+
+`GET /api/persons`
+
+返回当前用户定义的家庭成员或记录对象。
+
+`POST /api/persons`
+
+创建一个人物关系。
+
+```json
+{
+  "name": "大宝",
+  "relation": "儿子",
+  "kind": "child"
+}
+```
+
+`GET /api/persons/:personId/themes`
+
+返回某个人相关的主题。
+
+`POST /api/persons/:personId/themes`
+
+创建主题。
+
+```json
+{
+  "title": "三岁这一年",
+  "description": "记录孩子三岁时说过的话和成长瞬间",
+  "mode": "co_create"
+}
+```
+
+`mode` 可为 `solo` 或 `co_create`。
+
+`GET /api/themes/:themeId`
+
+返回主题、共创人、邀请和补充记录。
+
+`POST /api/themes/:themeId/collaborators`
+
+添加主题共创人。
+
+```json
+{
+  "name": "妈妈",
+  "relation": "母亲",
+  "role": "contributor"
+}
+```
+
+`POST /api/themes/:themeId/invitations`
+
+邀请某人补充主题。
+
+```json
+{
+  "targetName": "妈妈",
+  "relation": "母亲",
+  "prompt": "请补充大宝第一次去幼儿园那天的细节。"
+}
+```
+
+`POST /api/stories/:storyId/invitations`
+
+邀请某人补充某一段故事。
+
+`GET /api/invitations/:inviteCode`
+
+读取邀请。
+
+`POST /api/invitations/:inviteCode/contributions`
+
+提交补充。
+
+```json
+{
+  "contributorName": "妈妈",
+  "text": "那天他背着蓝色书包，进门前还回头看了一眼。"
+}
+```

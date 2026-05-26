@@ -48,6 +48,7 @@ model Transcript {
 model Story {
   id              String   @id @default(cuid())
   personId        String
+  themeId         String?
   title           String
   rawTranscriptId String?
   draftText       String
@@ -57,6 +58,53 @@ model Story {
   happenedAt      DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+model Theme {
+  id          String   @id @default(cuid())
+  ownerUserId String
+  personId    String?
+  title       String
+  description String?
+  mode        String   @default("solo")
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ThemeCollaborator {
+  id        String   @id @default(cuid())
+  themeId   String
+  name      String
+  relation  String?
+  role      String   @default("contributor")
+  status    String   @default("invited")
+  createdAt DateTime @default(now())
+}
+
+model Invitation {
+  id         String   @id @default(cuid())
+  inviteCode String   @unique
+  type       String   @default("theme")
+  themeId    String?
+  storyId    String?
+  targetName String
+  relation   String?
+  prompt     String?
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Contribution {
+  id              String   @id @default(cuid())
+  invitationId    String
+  themeId         String?
+  storyId         String?
+  contributorName String
+  text            String
+  status          String   @default("submitted")
+  createdAt       DateTime @default(now())
 }
 
 model StoryVersion {
@@ -96,4 +144,3 @@ model VoiceProfile {
   status          String   @default("disabled")
   createdAt       DateTime @default(now())
 }
-

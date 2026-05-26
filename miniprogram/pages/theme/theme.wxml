@@ -1,0 +1,36 @@
+<view class="page page-soft safe-bottom">
+  <view class="eyebrow">主题共创</view>
+  <view class="title">{{personName}}的记忆主题</view>
+  <view class="subtitle">一个主题可以独立完成，也可以邀请家人一起补充。</view>
+
+  <view class="form-card">
+    <view class="input-label">主题名称</view>
+    <input class="input" value="{{title}}" bindinput="onTitleInput" placeholder="例如：大宝三岁这一年" />
+    <view class="input-label">补充说明</view>
+    <textarea class="textarea" value="{{description}}" bindinput="onDescriptionInput" placeholder="例如：记录他说过的话、幼儿园趣事、旅行照片" />
+
+    <view class="mode-row">
+      <view class="mode-pill {{mode === 'solo' ? 'active' : ''}}" bindtap="setSolo">独立完成</view>
+      <view class="mode-pill {{mode === 'co_create' ? 'active' : ''}}" bindtap="setCoCreate">邀请共创</view>
+    </view>
+
+    <button class="primary-button form-action" bindtap="createTheme">创建主题</button>
+  </view>
+
+  <view wx:for="{{themes}}" wx:key="id" class="theme-card" bindtap="openTheme" data-id="{{item.id}}">
+    <view class="theme-title">{{item.title}}</view>
+    <view class="theme-desc">{{item.description || '还没有说明'}}</view>
+    <view class="tag">{{item.mode === 'co_create' ? '可共创' : '独立'}}</view>
+  </view>
+
+  <view wx:if="{{currentTheme}}" class="form-card">
+    <view class="section-title">邀请共创</view>
+    <view class="input-label">邀请谁</view>
+    <input class="input" value="{{inviteName}}" bindinput="onInviteNameInput" placeholder="例如：妈妈" />
+    <view class="input-label">请 TA 补充什么</view>
+    <textarea class="textarea" value="{{invitePrompt}}" bindinput="onInvitePromptInput" placeholder="例如：帮忙补充孩子第一次走路那天的细节" />
+    <button class="secondary-button form-action" bindtap="inviteToTheme">生成邀请</button>
+    <view wx:if="{{sharePath}}" class="share-box">{{sharePath}}</view>
+  </view>
+</view>
+

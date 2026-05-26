@@ -6,6 +6,8 @@ const recordingRoutes = require('./routes/recordings.routes');
 const storyRoutes = require('./routes/stories.routes');
 const conversationRoutes = require('./routes/conversations.routes');
 const photoRoutes = require('./routes/photos.routes');
+const themeRoutes = require('./routes/themes.routes');
+const invitationRoutes = require('./routes/invitations.routes');
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.use('/api/recordings', recordingRoutes);
 app.use('/api/stories', storyRoutes);
 app.use('/api', conversationRoutes);
 app.use('/api/photos', photoRoutes);
+app.use('/api/themes', themeRoutes);
+app.use('/api/invitations', invitationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

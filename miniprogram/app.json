@@ -1,6 +1,9 @@
 {
   "pages": [
     "pages/home/home",
+    "pages/family/family",
+    "pages/theme/theme",
+    "pages/invite/invite",
     "pages/conversation/conversation",
     "pages/record/record",
     "pages/story/story",
@@ -9,7 +12,7 @@
     "pages/chat/chat"
   ],
   "window": {
-    "navigationBarTitleText": "回忆录",
+    "navigationBarTitleText": "家庭记忆",
     "navigationBarBackgroundColor": "#F0F9FF",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#F0F9FF"

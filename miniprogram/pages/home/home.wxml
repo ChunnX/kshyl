@@ -1,14 +1,14 @@
 <view class="page page-soft home safe-bottom">
-  <view class="eyebrow">每天 5 分钟</view>
+  <view class="eyebrow">家人的每日片刻</view>
   <view class="title">把声音和故事留下来</view>
-  <view class="subtitle">点一下就能开始说。AI 会帮忙整理，家人再慢慢校对。</view>
+  <view class="subtitle">父母的人生故事、孩子的成长瞬间、伴侣的日常心情，都可以用声音慢慢保存。</view>
 
   <image class="hero-image" src="/assets/illustrations/voice-memory.svg" mode="aspectFit" />
 
   <view class="promise-row">
     <view class="promise-item">
       <view class="promise-number">1</view>
-      <view class="promise-text">说话</view>
+      <view class="promise-text">记录</view>
     </view>
     <view class="promise-line"></view>
     <view class="promise-item">
@@ -18,18 +18,18 @@
     <view class="promise-line"></view>
     <view class="promise-item">
       <view class="promise-number">3</view>
-      <view class="promise-text">成书</view>
+      <view class="promise-text">珍藏</view>
     </view>
   </view>
 
   <view class="trust-panel">
     <view class="trust-item">
       <view class="trust-dot"></view>
-      <view class="trust-text">默认只给家人看</view>
+      <view class="trust-text">默认只在家人之间保存</view>
     </view>
     <view class="trust-item">
       <view class="trust-dot"></view>
-      <view class="trust-text">声音克隆需本人授权</view>
+      <view class="trust-text">父母回忆和孩子成长都能记录</view>
     </view>
   </view>
 
@@ -39,9 +39,16 @@
       语音陪聊
     </button>
     <button class="primary-button" bindtap="goRecord">
-      <image class="button-icon" src="/assets/icons/mic.svg" mode="aspectFit" />
+      <image class="button-icon" src="/assets/icons/mic-white.svg" mode="aspectFit" />
       单独录一段
     </button>
-    <button class="secondary-button" bindtap="goStories">看看已保存</button>
+    <button class="secondary-button" bindtap="goStories">
+      <image class="button-icon dark-icon" src="/assets/icons/archive.svg" mode="aspectFit" />
+      看看家庭记忆
+    </button>
+    <button class="secondary-button" bindtap="goFamily">
+      <image class="button-icon dark-icon" src="/assets/icons/check.svg" mode="aspectFit" />
+      人物与主题
+    </button>
   </view>
 </view>

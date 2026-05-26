@@ -79,3 +79,8 @@
   font-weight: 700;
   color: #14532d;
 }
+
+.dark-icon {
+  background: #e0f2fe;
+  border-radius: 50%;
+}
