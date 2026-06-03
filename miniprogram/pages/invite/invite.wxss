@@ -1,43 +1,136 @@
 .form-card {
-  margin-top: 28rpx;
-  padding: 28rpx;
-  background: #ffffff;
-  border: 2rpx solid #bae6fd;
-  border-radius: 18rpx;
-  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+  margin-top: 36rpx;
+  padding: 36rpx;
+  background: var(--card-bg);
+  border: 2rpx solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-smooth);
+  box-sizing: border-box;
 }
 
 .input-label {
-  margin-top: 20rpx;
-  margin-bottom: 12rpx;
+  margin-top: 24rpx;
+  margin-bottom: 14rpx;
   font-size: 30rpx;
   font-weight: 800;
-  color: #082f49;
+  color: var(--text-dark);
 }
 
 .input,
 .textarea {
   width: 100%;
   box-sizing: border-box;
-  padding: 0 24rpx;
-  border-radius: 16rpx;
-  border: 3rpx solid #7dd3fc;
-  background: #f8fcff;
+  padding: 0 28rpx;
+  border-radius: var(--radius-sm);
+  border: 3rpx solid #e7e5e4;
+  background: #fafaf9;
   font-size: 32rpx;
-  color: #123f55;
+  color: var(--text-dark);
+  transition: var(--transition-smooth);
 }
 
 .input {
-  min-height: 92rpx;
+  min-height: 96rpx;
 }
 
 .textarea {
-  min-height: 360rpx;
-  padding-top: 22rpx;
+  min-height: 280rpx;
+  padding-top: 24rpx;
   line-height: 1.6;
 }
 
-.form-action {
-  margin-top: 28rpx;
+.input:focus,
+.textarea:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 12rpx rgba(217, 119, 6, 0.1);
 }
 
+.form-action {
+  margin-top: 36rpx;
+}
+
+/* 💻 故事共创选择卡片 */
+.stories-header {
+  margin-top: 44rpx;
+  margin-bottom: 20rpx;
+  font-size: 32rpx;
+  font-weight: 800;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.stories-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+}
+
+.story-select-card {
+  padding: 28rpx 32rpx;
+  background: #ffffff;
+  border: 2rpx solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  transition: var(--transition-smooth);
+}
+
+.story-select-card.active-story {
+  border-color: var(--primary);
+  background: #fffbeb; /* 💻 极暖淡金色背景 */
+  box-shadow: 0 8rpx 24rpx rgba(217, 119, 6, 0.12);
+}
+
+.story-select-info {
+  flex: 1;
+}
+
+.story-select-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.story-select-desc {
+  margin-top: 8rpx;
+  font-size: 28rpx;
+  color: var(--text-muted);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 💻 最多限制显示两行预览 */
+  overflow: hidden;
+}
+
+.select-indicator {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  border: 3rpx solid #e7e5e4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 4rpx;
+  transition: var(--transition-smooth);
+}
+
+.story-select-card.active-story .select-indicator {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.check-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #ffffff;
+}

@@ -1,6 +1,8 @@
 .conversation {
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: calc(190rpx + env(safe-area-inset-bottom));
 }
 
 .mode-switch {
@@ -78,6 +80,28 @@
   border: 2rpx solid #bae6fd;
 }
 
+.connection-help {
+  margin-top: 18rpx;
+  padding: 22rpx;
+  border-radius: 18rpx;
+  background: #fff7ed;
+  border: 2rpx solid #fed7aa;
+}
+
+.connection-help-title {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #9a3412;
+}
+
+.connection-help-text {
+  margin-top: 8rpx;
+  font-size: 25rpx;
+  line-height: 1.45;
+  color: #7c2d12;
+  word-break: break-all;
+}
+
 .status-copy {
   font-size: 28rpx;
   font-weight: 800;
@@ -110,13 +134,19 @@
 }
 
 .message-list {
-  height: 520rpx;
+  min-height: 360rpx;
+  max-height: 520rpx;
+  flex: 1 1 auto;
   margin-top: 26rpx;
   padding: 4rpx 0;
   box-sizing: border-box;
 }
 
 .message {
+  margin-top: 22rpx;
+}
+
+.empty-message {
   margin-top: 22rpx;
 }
 
@@ -177,10 +207,28 @@
 }
 
 .conversation-actions {
-  margin-top: 26rpx;
+  position: fixed;
+  left: 36rpx;
+  right: 36rpx;
+  bottom: calc(28rpx + env(safe-area-inset-bottom));
+  z-index: 20;
+  margin-top: 0;
+  padding: 18rpx;
   display: flex;
   flex-direction: column;
-  gap: 22rpx;
+  gap: 16rpx;
+  border-radius: 28rpx;
+  background: rgba(250, 250, 250, 0.96);
+  border: 2rpx solid rgba(186, 230, 253, 0.8);
+  box-shadow: 0 20rpx 48rpx rgba(12, 74, 110, 0.14);
+  box-sizing: border-box;
+}
+
+.conversation-actions .primary-button,
+.conversation-actions .secondary-button {
+  min-height: 92rpx;
+  border-radius: 22rpx;
+  font-size: 31rpx;
 }
 
 .finish-button {

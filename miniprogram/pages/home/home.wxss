@@ -1,86 +1,192 @@
 .home {
+  min-height: 100vh;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  padding: 36rpx 36rpx calc(36rpx + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  background: linear-gradient(180deg, #f0f9ff 0%, #fafafa 100%); /* 💻 温馨渐变：以舒适的浅天蓝开启，干净灰白收尾 */
 }
 
-.promise-row {
-  margin-top: 28rpx;
-  padding: 26rpx 24rpx;
-  background: #ffffff;
-  border: 2rpx solid #bae6fd;
-  border-radius: 18rpx;
+/* 💻 1. 精致侧置图首部（左右布局） */
+.home-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+  gap: 28rpx;
+  margin-top: 10rpx;
+  margin-bottom: 20rpx;
+  flex-shrink: 0; /* 💻 头部大小固定，决不压缩 */
 }
 
-.promise-item {
-  width: 126rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10rpx;
-}
-
-.promise-number {
-  width: 54rpx;
-  height: 54rpx;
-  border-radius: 50%;
-  background: #0369a1;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30rpx;
-  font-weight: 800;
-}
-
-.promise-text {
-  font-size: 30rpx;
-  color: #0c4a6e;
-  font-weight: 800;
-}
-
-.promise-line {
-  height: 4rpx;
+.header-left {
   flex: 1;
-  background: #bae6fd;
-}
-
-.trust-panel {
-  margin-top: 24rpx;
-  padding: 24rpx 26rpx;
-  background: #ecfdf5;
-  border: 2rpx solid #86efac;
-  border-radius: 18rpx;
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
 }
 
-.trust-item {
-  display: flex;
+.home-eyebrow {
+  display: inline-flex;
   align-items: center;
-  gap: 14rpx;
-}
-
-.trust-dot {
-  width: 18rpx;
-  height: 18rpx;
-  border-radius: 50%;
-  background: #22c55e;
-  flex: 0 0 auto;
-}
-
-.trust-text {
-  font-size: 30rpx;
-  line-height: 1.4;
+  align-self: flex-start;
+  min-height: 40rpx;
+  padding: 0 18rpx;
+  border-radius: var(--radius-pill);
+  background: var(--primary-light);
+  color: #0369a1;
+  font-size: 22rpx;
   font-weight: 700;
-  color: #14532d;
+  letter-spacing: 1rpx;
+  margin-bottom: 12rpx;
 }
 
-.dark-icon {
-  background: #e0f2fe;
-  border-radius: 50%;
+.home-title {
+  font-size: 46rpx;
+  line-height: 1.2;
+  font-weight: 900;
+  color: var(--text-dark);
+}
+
+.home-subtitle {
+  font-size: 25rpx;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 10rpx;
+}
+
+.header-right {
+  flex-shrink: 0;
+}
+
+.header-hero-image {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: var(--radius-md);
+  display: block;
+  /* 💻 无容器背景色，利用 SVG 自带的径向背景渐变融入界面 */
+  background: transparent;
+  filter: drop-shadow(0 8rpx 20rpx rgba(2, 132, 199, 0.06));
+}
+
+/* 💻 2. 核心 2x2 弹性自适应卡片网格 */
+.dashboard-grid {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 💻 标准双列 */
+  grid-template-rows: repeat(2, minmax(230rpx, 1fr));    /* 💻 双行自适应比例 */
+  gap: 26rpx;
+  margin-top: 16rpx;
+  margin-bottom: 24rpx;
+  min-height: 500rpx;
+}
+
+.grid-card {
+  height: 100%;
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+  padding: 32rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: var(--transition-smooth);
+}
+
+/* 🔘 物理触感按压缩放 */
+.grid-card:active {
+  transform: scale(0.955);
+  opacity: 0.93;
+}
+
+.card-content {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 💻 图标在顶部，文字内容自动贴底，标准的现代控制台布局 */
+  align-items: flex-start;
+}
+
+.card-icon {
+  width: 60rpx;
+  height: 60rpx;
+  display: block;
+}
+
+.card-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  width: 100%;
+}
+
+.card-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.card-desc {
+  font-size: 24rpx;
+  line-height: 1.3;
+}
+
+/* 🎨 活力橙渐变主卡片（语音记事与陪聊） */
+.card-primary-blue {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  box-shadow: 0 14rpx 36rpx rgba(242, 92, 34, 0.16);
+}
+
+.card-primary-blue .card-desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 🎨 深青绿渐变主卡片（整理成册） */
+.card-primary-green {
+  background: var(--secondary-gradient);
+  color: #ffffff;
+  box-shadow: 0 14rpx 36rpx rgba(30, 107, 123, 0.16);
+}
+
+.card-primary-green .card-desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 🎨 温暖金色渐变次卡片（家庭记忆 - 契合头像金色记忆星光） */
+.card-secondary-amber {
+  background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+  color: #ffffff;
+  box-shadow: 0 14rpx 36rpx rgba(245, 158, 11, 0.16);
+}
+
+.card-secondary-amber .card-desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 🎨 珊瑚红心渐变次卡片（人物与主题 - 契合头像中心红心） */
+.card-secondary-coral {
+  background: linear-gradient(135deg, #ff7575 0%, #e83c3c 100%);
+  color: #ffffff;
+  box-shadow: 0 14rpx 36rpx rgba(232, 60, 60, 0.16);
+}
+
+.card-secondary-coral .card-desc {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 💻 3. 极简单行信任页脚 */
+.trust-footer {
+  text-align: center;
+  flex-shrink: 0; /* 💻 确保页脚大小固定 */
+  margin-top: 10rpx;
+  margin-bottom: 8rpx;
+}
+
+.trust-footer-text {
+  font-size: 25rpx;
+  color: var(--text-muted);
+  opacity: 0.85;
+  font-weight: 700;
+  letter-spacing: 0.5rpx;
 }

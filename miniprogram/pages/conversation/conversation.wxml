@@ -1,8 +1,8 @@
 <view class="page page-soft conversation safe-bottom">
   <view>
-    <view class="eyebrow">语音陪聊</view>
-    <view class="title">像朋友一样慢慢聊</view>
-    <view class="subtitle">AI 会先了解大致经历，再自然追问细节。也可以聊孩子的成长、旅行、家庭日常。</view>
+    <view class="eyebrow">语音记事与陪聊</view>
+    <view class="title">留存声音的温度</view>
+    <view class="subtitle">可选择“对话模式”与 AI 暖心互动整理生平，或选择“倾诉模式”进行无打扰单向录音，多角度珍藏家庭记忆。</view>
   </view>
 
   <view class="mode-switch">
@@ -27,12 +27,24 @@
     <view class="status-copy">{{statusText}}</view>
   </view>
 
+  <view wx:if="{{realtimeErrorText}}" class="connection-help">
+    <view class="connection-help-title">实时连接没有建立</view>
+    <view class="connection-help-text">{{realtimeErrorText}}</view>
+    <view class="connection-help-text">请确认后端正在运行，手机和电脑在同一 Wi-Fi，或切换到 wss 隧道/云端地址。</view>
+  </view>
+
   <view wx:if="{{liveTranscript}}" class="live-panel">
     <view class="live-label">实时识别</view>
     <view class="live-text">{{liveTranscript}}</view>
   </view>
 
   <scroll-view class="message-list" scroll-y>
+    <view wx:if="{{messages.length === 0}}" class="empty-message">
+      <view class="message-label">等待连接</view>
+      <view class="message-bubble">
+        <view class="message-text">连接成功后，AI 的第一句提示会显示在这里。</view>
+      </view>
+    </view>
     <view wx:for="{{messages}}" wx:key="id" class="message {{item.role}}">
       <view class="message-label">{{item.role === 'assistant' ? 'AI' : '我'}}</view>
       <view class="message-bubble">

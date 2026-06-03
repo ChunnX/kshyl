@@ -5,38 +5,50 @@ const llm = require('../services/llm.service');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.json({
-    people: store.listPeople('user_demo_001')
-  });
+router.get('/', async (req, res, next) => {
+  try {
+    res.json({
+      people: await store.listPeople('user_demo_001')
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res, next) => {
   if (!req.body.name) {
     res.status(400).json({ message: 'name is required' });
     return;
   }
 
-  const person = store.createPerson({
-    name: req.body.name,
-    relation: req.body.relation,
-    kind: req.body.kind,
-    ownerUserId: 'user_demo_001'
-  });
+  try {
+    const person = await store.createPerson({
+      name: req.body.name,
+      relation: req.body.relation,
+      kind: req.body.kind,
+      ownerUserId: 'user_demo_001'
+    });
 
-  res.status(201).json({ person });
-});
-
-router.get('/:personId', (req, res) => {
-  const person = store.getPerson(req.params.personId);
-  if (!person) {
-    res.status(404).json({ message: 'Person not found' });
-    return;
+    res.status(201).json({ person });
+  } catch (error) {
+    next(error);
   }
-  res.json({ person });
 });
 
-router.put('/:personId/consent', (req, res) => {
+router.get('/:personId', async (req, res, next) => {
+  try {
+    const person = await store.getPerson(req.params.personId);
+    if (!person) {
+      res.status(404).json({ message: 'Person not found' });
+      return;
+    }
+    res.json({ person });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.put('/:personId/consent', async (req, res, next) => {
   const allowedStatuses = ['pending', 'granted', 'revoked'];
   if (!allowedStatuses.includes(req.body.consentStatus)) {
     res.status(400).json({
@@ -45,45 +57,61 @@ router.put('/:personId/consent', (req, res) => {
     return;
   }
 
-  const person = store.updatePerson(req.params.personId, {
-    consentStatus: req.body.consentStatus
-  });
+  try {
+    const person = await store.updatePerson(req.params.personId, {
+      consentStatus: req.body.consentStatus
+    });
 
-  if (!person) {
-    res.status(404).json({ message: 'Person not found' });
-    return;
+    if (!person) {
+      res.status(404).json({ message: 'Person not found' });
+      return;
+    }
+
+    res.json({ person });
+  } catch (error) {
+    next(error);
   }
-
-  res.json({ person });
 });
 
-router.get('/:personId/stories', (req, res) => {
-  res.json({
-    stories: store.listStories(req.params.personId)
-  });
+router.get('/:personId/stories', async (req, res, next) => {
+  try {
+    res.json({
+      stories: await store.listStories(req.params.personId)
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.get('/:personId/themes', (req, res) => {
-  res.json({
-    themes: store.listThemes({ personId: req.params.personId })
-  });
+router.get('/:personId/themes', async (req, res, next) => {
+  try {
+    res.json({
+      themes: await store.listThemes({ personId: req.params.personId })
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.post('/:personId/themes', (req, res) => {
+router.post('/:personId/themes', async (req, res, next) => {
   if (!req.body.title) {
     res.status(400).json({ message: 'title is required' });
     return;
   }
 
-  const theme = store.createTheme({
-    personId: req.params.personId,
-    title: req.body.title,
-    description: req.body.description,
-    mode: req.body.mode || 'solo',
-    ownerUserId: 'user_demo_001'
-  });
+  try {
+    const theme = await store.createTheme({
+      personId: req.params.personId,
+      title: req.body.title,
+      description: req.body.description,
+      mode: req.body.mode || 'solo',
+      ownerUserId: 'user_demo_001'
+    });
 
-  res.status(201).json({ theme });
+    res.status(201).json({ theme });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/:personId/book/export', async (req, res, next) => {
@@ -95,15 +123,19 @@ router.post('/:personId/book/export', async (req, res, next) => {
   }
 });
 
-router.get('/:personId/books', (req, res) => {
-  res.json({
-    books: store.listBooks(req.params.personId)
-  });
+router.get('/:personId/books', async (req, res, next) => {
+  try {
+    res.json({
+      books: await store.listBooks(req.params.personId)
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/:personId/chat', async (req, res, next) => {
   try {
-    const person = store.getPerson(req.params.personId);
+    const person = await store.getPerson(req.params.personId);
     if (!person) {
       res.status(404).json({ message: 'Person not found' });
       return;
@@ -116,7 +148,7 @@ router.post('/:personId/chat', async (req, res, next) => {
       return;
     }
 
-    const stories = store.listStories(req.params.personId).filter((story) => story.status === 'approved');
+    const stories = (await store.listStories(req.params.personId)).filter((story) => story.status === 'approved');
     const reply = await llm.chatWithMemory(req.body.message || '', stories);
     res.json({ reply });
   } catch (error) {

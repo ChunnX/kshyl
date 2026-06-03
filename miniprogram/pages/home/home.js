@@ -5,9 +5,9 @@ Page({
     });
   },
 
-  goRecord() {
+  goBook() {
     wx.navigateTo({
-      url: '/pages/record/record'
+      url: '/pages/book/book'
     });
   },
 
@@ -19,7 +19,7 @@ Page({
 
   goFamily() {
     wx.navigateTo({
-      url: '/pages/family/family'
+      url: '/pages/theme/theme'
     });
   }
 });

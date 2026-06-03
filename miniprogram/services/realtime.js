@@ -1,11 +1,14 @@
-const WS_URL = 'ws://localhost:3000/realtime/conversations';
+const CONFIG = require('../config');
+const WS_URL = CONFIG.WS_URL;
 
 function connectRealtimeConversation(options) {
+  const url = `${WS_URL}?personId=${encodeURIComponent(options.personId)}&mode=${encodeURIComponent(options.mode)}&dialect=${encodeURIComponent(options.dialect || 'auto')}`;
   const socket = wx.connectSocket({
-    url: `${WS_URL}?personId=${encodeURIComponent(options.personId)}&mode=${encodeURIComponent(options.mode)}&dialect=${encodeURIComponent(options.dialect || 'auto')}`
+    url
   });
 
   let opened = false;
+  let manuallyClosed = false;
   const pending = [];
 
   function send(data) {
@@ -38,15 +41,24 @@ function connectRealtimeConversation(options) {
     }
   });
 
-  socket.onError(() => {
+  socket.onError((error) => {
+    const errMsg = error && error.errMsg ? error.errMsg : '';
+    console.error('[realtime] connect failed', {
+      mode: CONFIG.MODE,
+      url,
+      errMsg
+    });
     options.onEvent({
       type: 'error',
-      message: '实时连接失败'
+      message: errMsg ? `实时连接失败：${errMsg}` : `实时连接失败：${url}`
     });
   });
 
   socket.onClose(() => {
     opened = false;
+    if (manuallyClosed) {
+      return;
+    }
     options.onEvent({
       type: 'closed'
     });
@@ -69,6 +81,7 @@ function connectRealtimeConversation(options) {
       }));
     },
     close() {
+      manuallyClosed = true;
       socket.close();
     }
   };

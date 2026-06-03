@@ -37,6 +37,7 @@ async function createRealtimeConnection(ws, query) {
   const dialect = query.dialect || 'auto';
   let currentPhotoIds = [];
   let asrSession = null;
+  let asrHadError = false;
 
   if (!personId) {
     throw new Error('personId is required');
@@ -52,6 +53,87 @@ async function createRealtimeConnection(ws, query) {
     dialect
   });
 
+  let turnFinalizing = false;
+
+  async function finalizeTurn() {
+    if (turnFinalizing || !asrSession) {
+      return;
+    }
+    turnFinalizing = true;
+    const session = asrSession;
+    asrSession = null; // Clear immediately to prevent double processing
+
+    try {
+      const text = await session.finish();
+      if (!text || !text.trim()) {
+        if (asrHadError) {
+          return;
+        }
+        sendJson(ws, {
+          type: 'error',
+          message: '没有识别到有效语音，请确认麦克风权限、说话音量和 ASR 配置后再试。'
+        });
+        return;
+      }
+
+      const turn = await conversationService.addTurn(conversationId, {
+        text,
+        photoIds: currentPhotoIds
+      });
+
+      // Split AI response into sentences for segmented streaming (Direction 3)
+      const sentences = turn.assistantMessage.text
+        .split(/(?<=[。！？；!?\n])/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      if (sentences.length <= 1) {
+        const tts = await streamingTts.synthesizeRealtimeReply(turn.assistantMessage.text);
+        sendJson(ws, {
+          type: 'assistant_reply',
+          ...turn,
+          tts
+        });
+      } else {
+        // Multi-sentence: stream the first sentence immediately to achieve ultra-low latency!
+        const firstTts = await streamingTts.synthesizeRealtimeReply(sentences[0]);
+        
+        const firstTurn = {
+          ...turn,
+          assistantMessage: {
+            ...turn.assistantMessage,
+            text: sentences[0]
+          }
+        };
+
+        sendJson(ws, {
+          type: 'assistant_reply',
+          ...firstTurn,
+          tts: firstTts
+        });
+
+        // In the background, synthesize and stream subsequent segments!
+        for (let i = 1; i < sentences.length; i++) {
+          const ttsSeg = await streamingTts.synthesizeRealtimeReply(sentences[i]);
+          sendJson(ws, {
+            type: 'assistant_reply_segment',
+            conversationId,
+            messageId: turn.assistantMessage.id,
+            text: sentences[i],
+            tts: ttsSeg
+          });
+        }
+      }
+    } catch (err) {
+      sendJson(ws, {
+        type: 'error',
+        message: err.message
+      });
+    } finally {
+      turnFinalizing = false;
+    }
+  }
+
   ws.on('message', async (data, isBinary) => {
     try {
       if (isBinary) {
@@ -64,7 +146,19 @@ async function createRealtimeConnection(ws, query) {
       const event = JSON.parse(data.toString());
       if (event.type === 'start_turn') {
         currentPhotoIds = event.photoIds || [];
-        asrSession = createAsrSession(ws, dialect);
+        asrHadError = false;
+        asrSession = createAsrSession(ws, dialect, () => {
+          // Automated VAD silence detection triggers turn finalization!
+          finalizeTurn().catch((err) => {
+            console.error('Error in VAD finalizeTurn:', err);
+          });
+        }, (message) => {
+          asrHadError = true;
+          sendJson(ws, {
+            type: 'error',
+            message: `实时语音识别失败：${message}`
+          });
+        });
         sendJson(ws, {
           type: 'turn_started'
         });
@@ -74,26 +168,10 @@ async function createRealtimeConnection(ws, query) {
       if (event.type === 'end_turn') {
         currentPhotoIds = event.photoIds || currentPhotoIds;
         if (!asrSession) {
-          sendJson(ws, {
-            type: 'error',
-            message: 'No active ASR session'
-          });
+          // If already finalized via VAD, ignore manual end_turn
           return;
         }
-
-        const text = await asrSession.finish();
-        asrSession = null;
-        const turn = await conversationService.addTurn(conversationId, {
-          text,
-          photoIds: currentPhotoIds
-        });
-        const tts = await streamingTts.synthesizeRealtimeReply(turn.assistantMessage.text);
-
-        sendJson(ws, {
-          type: 'assistant_reply',
-          ...turn,
-          tts
-        });
+        await finalizeTurn();
         return;
       }
     } catch (error) {
@@ -111,7 +189,7 @@ async function createRealtimeConnection(ws, query) {
   });
 }
 
-function createAsrSession(ws, dialect) {
+function createAsrSession(ws, dialect, onSilenceDetected, onError) {
   return streamingAsr.createStreamingAsrSession({
     dialect,
     onPartial(partial) {
@@ -125,7 +203,11 @@ function createAsrSession(ws, dialect) {
         type: 'asr_final',
         ...finalResult
       });
-    }
+    },
+    onError(message) {
+      onError(message);
+    },
+    onSilenceDetected
   });
 }
 

@@ -1,0 +1,8 @@
+{
+  "version": "2.0",
+  "envId": "kshyl-d9gikdvfc6102c4a9",
+  "$schema": "https://framework-1258016615.tcloudbaseapp.com/schema/latest.json",
+  "cloudrun": {
+    "name": "express-bth9"
+  }
+}

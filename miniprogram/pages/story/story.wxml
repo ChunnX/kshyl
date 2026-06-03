@@ -28,13 +28,9 @@
   </view>
 
   <view class="actions">
-    <button class="secondary-button" bindtap="goBook">
-      <image class="button-icon dark-icon" src="/assets/icons/book.svg" mode="aspectFit" />
-      生成书稿
-    </button>
-    <button class="secondary-button" bindtap="goChat">
-      <image class="button-icon dark-icon" src="/assets/icons/chat.svg" mode="aspectFit" />
-      纪念对话
+    <button class="primary-button" bindtap="goChat">
+      <image class="button-icon" src="/assets/icons/chat-white.svg" mode="aspectFit" />
+      开启纪念对话
     </button>
   </view>
 </view>

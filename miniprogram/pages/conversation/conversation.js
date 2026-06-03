@@ -11,6 +11,7 @@ Page({
     messages: [],
     isRecording: false,
     isRealtimeReady: false,
+    realtimeErrorText: '',
     liveTranscript: '',
     photoIds: [],
     statusText: '正在准备实时语音'
@@ -49,13 +50,16 @@ Page({
       }
     });
 
-    recorder.onError(() => {
+    recorder.onError((error) => {
+      const errMsg = error && error.errMsg ? error.errMsg : '未知录音错误';
+      console.error('[recorder] error', error);
       this.setData({
         isRecording: false,
+        realtimeErrorText: `录音失败：${errMsg}`,
         statusText: '录音失败'
       });
       wx.showToast({
-        title: '录音失败',
+        title: `录音失败：${errMsg}`,
         icon: 'none'
       });
     });
@@ -71,6 +75,7 @@ Page({
       messages: [],
       liveTranscript: '',
       isRealtimeReady: false,
+      realtimeErrorText: '',
       statusText: '正在连接实时语音'
     });
 
@@ -88,6 +93,7 @@ Page({
         conversationId: event.conversation.id,
         messages: [event.assistantMessage],
         isRealtimeReady: true,
+        realtimeErrorText: '',
         statusText: '可以开始说了'
       });
       this.playAssistantAudio(event.assistantMessage);
@@ -131,6 +137,7 @@ Page({
     if (event.type === 'closed') {
       this.setData({
         isRealtimeReady: false,
+        realtimeErrorText: event.message || '实时连接已断开',
         statusText: '实时连接已断开'
       });
       return;
@@ -142,6 +149,8 @@ Page({
         icon: 'none'
       });
       this.setData({
+        isRealtimeReady: false,
+        realtimeErrorText: event.message || '实时语音出错',
         statusText: '实时语音出错'
       });
     }
@@ -191,7 +200,7 @@ Page({
     });
 
     recorder.start({
-      format: 'PCM',
+      format: 'pcm',
       frameSize: 5,
       sampleRate: 16000,
       numberOfChannels: 1

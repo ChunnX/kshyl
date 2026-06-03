@@ -1,4 +1,5 @@
-const BASE_URL = 'http://localhost:3000/api';
+const CONFIG = require('../config');
+const BASE_URL = CONFIG.BASE_URL;
 
 function request(path, options = {}) {
   return new Promise((resolve, reject) => {
@@ -131,6 +132,15 @@ module.exports = {
     return request(`/persons/${personId}/chat`, {
       method: 'POST',
       data: { message }
+    });
+  },
+  listAllThemes() {
+    return request('/themes');
+  },
+  createGlobalTheme(payload) {
+    return request('/themes', {
+      method: 'POST',
+      data: payload
     });
   }
 };

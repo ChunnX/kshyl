@@ -18,5 +18,10 @@
     "backgroundColor": "#F0F9FF"
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "permission": {
+    "scope.record": {
+      "desc": "您的录音将用于生成回忆故事或与AI进行实时对话"
+    }
+  }
 }

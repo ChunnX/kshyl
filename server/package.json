@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "tunnel": "node scripts/start-tunnel.js",
     "smoke": "node scripts/smoke-test.js"
   },
   "dependencies": {
@@ -13,6 +14,8 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "multer": "^2.1.1",
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {

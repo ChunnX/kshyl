@@ -4,6 +4,8 @@ const path = require('path');
 const WebSocket = require('ws');
 
 process.env.DATA_FILE = 'data/smoke-test-store.json';
+process.env.STREAMING_ASR_PROVIDER = 'mock';
+process.env.STREAMING_TTS_PROVIDER = 'mock';
 
 function listen() {
   return new Promise((resolve) => {
@@ -45,6 +47,13 @@ async function main() {
   try {
     const health = await request(baseUrl, '/health');
     assert(health.data.ok === true, 'health check failed');
+    await request(baseUrl, '/api/persons/person_demo_001');
+    await request(baseUrl, '/api/persons/person_demo_001/consent', {
+      method: 'PUT',
+      body: JSON.stringify({
+        consentStatus: 'pending'
+      })
+    });
 
     const createdRecording = await request(baseUrl, '/api/recordings', {
       method: 'POST',

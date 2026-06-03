@@ -12,16 +12,16 @@ async function startConversation(personId, mode = 'dialogue') {
     throw error;
   }
 
-  const person = store.getPerson(personId);
+  const person = await store.getPerson(personId);
   if (!person) {
     const error = new Error('Person not found');
     error.statusCode = 404;
     throw error;
   }
 
-  const stories = store.listStories(personId);
+  const stories = await store.listStories(personId);
   const opening = await llm.createConversationOpening({ mode, person, stories });
-  const conversation = store.createConversation({
+  const conversation = await store.createConversation({
     personId,
     mode,
     summary: '',
@@ -29,7 +29,7 @@ async function startConversation(personId, mode = 'dialogue') {
   });
   const openingSpeech = await speech.synthesizeSpeech(opening.replyText);
 
-  const assistantMessage = store.addConversationMessage({
+  const assistantMessage = await store.addConversationMessage({
     conversationId: conversation.id,
     personId,
     role: 'assistant',
@@ -45,7 +45,7 @@ async function startConversation(personId, mode = 'dialogue') {
 }
 
 async function addTurn(conversationId, payload) {
-  const conversation = store.getConversation(conversationId);
+  const conversation = await store.getConversation(conversationId);
   if (!conversation) {
     const error = new Error('Conversation not found');
     error.statusCode = 404;
@@ -54,9 +54,9 @@ async function addTurn(conversationId, payload) {
 
   const personId = conversation.personId;
   const text = await resolveUserText(payload);
-  const photos = store.listPhotos({ conversationId });
+  const photos = await store.listPhotos({ conversationId });
 
-  const userMessage = store.addConversationMessage({
+  const userMessage = await store.addConversationMessage({
     conversationId,
     personId,
     role: 'user',
@@ -65,8 +65,8 @@ async function addTurn(conversationId, payload) {
     photoIds: payload.photoIds || []
   });
 
-  const stories = store.listStories(personId);
-  const messages = store.listConversationMessages(conversationId);
+  const stories = await store.listStories(personId);
+  const messages = await store.listConversationMessages(conversationId);
   const reply = await llm.createConversationReply({
     mode: conversation.mode,
     userText: text,
@@ -77,7 +77,7 @@ async function addTurn(conversationId, payload) {
   const replySpeech = await speech.synthesizeSpeech(reply.replyText);
 
   const storyDraft = await llm.polishStory(text);
-  const story = store.createStory({
+  const story = await store.createStory({
     personId,
     conversationId,
     title: storyDraft.title,
@@ -89,7 +89,7 @@ async function addTurn(conversationId, payload) {
     photoIds: payload.photoIds || []
   });
 
-  const assistantMessage = store.addConversationMessage({
+  const assistantMessage = await store.addConversationMessage({
     conversationId,
     personId,
     role: 'assistant',
@@ -99,7 +99,7 @@ async function addTurn(conversationId, payload) {
     storyId: story.id
   });
 
-  store.updateConversation(conversationId, {
+  await store.updateConversation(conversationId, {
     lastQuestion: reply.nextQuestion,
     summary: buildLightSummary(messages, text)
   });
@@ -122,7 +122,7 @@ async function resolveUserText(payload) {
     throw error;
   }
 
-  const recording = store.getRecording(payload.recordingId);
+  const recording = await store.getRecording(payload.recordingId);
   if (!recording) {
     const error = new Error('Recording not found');
     error.statusCode = 404;
@@ -130,7 +130,7 @@ async function resolveUserText(payload) {
   }
 
   const transcriptResult = await asr.transcribeRecording(recording);
-  store.createTranscript({
+  await store.createTranscript({
     recordingId: recording.id,
     rawText: transcriptResult.rawText,
     confidence: transcriptResult.confidence,

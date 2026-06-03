@@ -1,14 +1,72 @@
 <view class="page page-soft safe-bottom">
-  <view class="eyebrow">邀请补充</view>
-  <view class="title">帮家人补一段记忆</view>
-  <view class="subtitle">{{invitation.prompt || '写下你知道的细节，会进入家庭记忆里等待整理。'}}</view>
+  <!-- 💻 第一种状态：尚未提交共创，显示邀请与录入表单 -->
+  <block wx:if="{{!submitted}}">
+    <view class="eyebrow">家族记忆共创</view>
+    <view class="title">{{invitation.targetName || '家人'}}，邀请你加入</view>
+    
+    <view class="panel notice-panel" style="margin-top: 24rpx; padding: 28rpx 36rpx;">
+      <view style="font-weight: 800; font-size: 32rpx; color: #166534; margin-bottom: 8rpx; display: flex; align-items: center; gap: 8rpx;">
+        <view class="status-dot" style="background: #166534;"></view>家人对你的寄语：
+      </view>
+      <view class="large-text" style="color: #14532d; font-size: 30rpx; font-style: italic; line-height: 1.6;">“{{invitation.prompt || '帮忙补充点家庭回忆故事吧，我们一起留存回忆。'}}”</view>
+    </view>
 
-  <view class="form-card">
-    <view class="input-label">你的名字</view>
-    <input class="input" value="{{contributorName}}" bindinput="onNameInput" placeholder="例如：妈妈" />
-    <view class="input-label">补充内容</view>
-    <textarea class="textarea" value="{{text}}" bindinput="onTextInput" placeholder="可以写时间、地点、人物、当时发生了什么" />
-    <button class="primary-button form-action" bindtap="submit">提交补充</button>
-  </view>
+    <!-- 📖 已经录制的故事（可选故事进行细节共创） -->
+    <block wx:if="{{stories.length > 0}}">
+      <view class="stories-header">
+        <view class="status-dot"></view>
+        <text>主题「{{theme.title}}」中已有的故事</text>
+      </view>
+      <view class="subtitle" style="margin-top: 0; margin-bottom: 24rpx; font-size: 28rpx;">你可以点击选中一个故事卡片，为其补充你所熟知的精彩细节：</view>
+      
+      <view class="stories-list">
+        <view wx:for="{{stories}}" wx:key="id" 
+              class="story-select-card {{selectedStoryId === item.id ? 'active-story' : ''}}" 
+              bindtap="selectStory" data-id="{{item.id}}">
+          <view class="story-select-info">
+            <view class="story-select-title">{{item.title}}</view>
+            <view class="story-select-desc">{{item.polishedText || item.draftText}}</view>
+          </view>
+          <view class="select-indicator">
+            <view class="check-dot" wx:if="{{selectedStoryId === item.id}}"></view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 📝 共创内容提交表单 -->
+    <view class="form-card" style="margin-top: 40rpx;">
+      <view class="section-title">
+        {{selectedStoryId ? '为选中故事补充细节' : '补充新的故事与细节'}}
+      </view>
+      
+      <view class="input-label">你的名字 / 称呼</view>
+      <input class="input" value="{{contributorName}}" bindinput="onNameInput" placeholder="例如：妈妈、二叔" />
+      
+      <view class="input-label">补充的细节内容</view>
+      <textarea class="textarea" value="{{text}}" bindinput="onTextInput" 
+                placeholder="{{selectedStoryId ? '写下您所知道的细节，比如当时谁在场、发生了什么好笑的插曲...' : '可以写下您所知道的任意家庭记忆、有趣的故事片段或者细节...'}}" />
+      
+      <button class="primary-button form-action" bindtap="submit">
+        确认提交，加入家庭共创
+      </button>
+    </view>
+  </block>
+
+  <!-- 💻 第二种状态：已成功提交，展示答谢以及进入项目大厅入口 -->
+  <block wx:else>
+    <view class="form-card" style="margin-top: 80rpx; padding: 60rpx 40rpx; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <!-- 🎉 答谢图标与特效 -->
+      <view style="width: 140rpx; height: 140rpx; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 64rpx; margin-bottom: 36rpx; box-shadow: 0 12rpx 28rpx rgba(217, 119, 6, 0.15);">💝</view>
+      
+      <view class="title" style="font-size: 46rpx; margin-top: 0; margin-bottom: 20rpx;">谢谢你，共创已完成！</view>
+      <view class="subtitle" style="margin-top: 0; margin-bottom: 48rpx; font-size: 30rpx; line-height: 1.6; color: var(--text-muted);">
+        您的宝贵回忆细节已经写入了家庭主题「{{theme.title || '回忆记录'}}」中。现在，您已正式成为该项目的家庭共创人。
+      </view>
+      
+      <button class="primary-button" style="width: 100%; min-height: 110rpx;" bindtap="enterProject">
+        进入家庭记忆项目
+      </button>
+    </view>
+  </block>
 </view>
-

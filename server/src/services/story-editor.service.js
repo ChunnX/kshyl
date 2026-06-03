@@ -3,7 +3,7 @@ const asr = require('./asr.service');
 const llm = require('./llm.service');
 
 async function createStoryFromRecording(recordingId) {
-  const recording = store.getRecording(recordingId);
+  const recording = await store.getRecording(recordingId);
   if (!recording) {
     const error = new Error('Recording not found');
     error.statusCode = 404;
@@ -11,7 +11,7 @@ async function createStoryFromRecording(recordingId) {
   }
 
   const transcriptResult = await asr.transcribeRecording(recording);
-  const transcript = store.createTranscript({
+  const transcript = await store.createTranscript({
     recordingId: recording.id,
     rawText: transcriptResult.rawText,
     confidence: transcriptResult.confidence,
@@ -21,7 +21,7 @@ async function createStoryFromRecording(recordingId) {
   const storyDraft = await llm.polishStory(transcript.rawText);
   const followUpQuestion = await llm.createFollowUpQuestion(transcript.rawText);
 
-  const story = store.createStory({
+  const story = await store.createStory({
     personId: recording.personId,
     rawTranscriptId: transcript.id,
     title: storyDraft.title,
@@ -41,4 +41,3 @@ async function createStoryFromRecording(recordingId) {
 module.exports = {
   createStoryFromRecording
 };
-

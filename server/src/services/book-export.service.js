@@ -1,7 +1,7 @@
 const store = require('../db/memory-store');
 
 async function exportBook(personId) {
-  const stories = store.listStories(personId).filter((story) => story.status === 'approved' || story.status === 'draft');
+  const stories = (await store.listStories(personId)).filter((story) => story.status === 'approved' || story.status === 'draft');
 
   return store.createBook({
     personId,

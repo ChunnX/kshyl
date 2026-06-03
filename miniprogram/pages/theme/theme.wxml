@@ -1,15 +1,42 @@
 <view class="page page-soft safe-bottom">
-  <view class="eyebrow">主题共创</view>
-  <view class="title">{{personName}}的记忆主题</view>
-  <view class="subtitle">一个主题可以独立完成，也可以邀请家人一起补充。</view>
+  <view>
+    <view class="eyebrow">主题和人物</view>
+    <view class="title">管理家庭主题与成员</view>
+    <view class="subtitle">在这里规划家庭回忆主题。主题可由 AI 根据对话自动总结，也可手动创建，并在每个主题下定义参与共创的人员。</view>
+  </view>
 
-  <view class="form-card">
+  <!-- 🤖 1. AI 智能推荐主题（对话智能总结） -->
+  <view class="panel notice-panel" style="margin-top: 32rpx; border: 2rpx solid #fde68a;">
+    <view class="status-row" style="margin-bottom: 16rpx;">
+      <view class="status-dot" style="background: var(--primary);"></view>
+      <view class="section-title" style="margin-bottom: 0; color: #78350f;">🤖 AI 智能对话总结推荐</view>
+    </view>
+    <view class="quiet-text" style="font-size: 26rpx; line-height: 1.5; margin-bottom: 24rpx; color: #78350f;">
+      AI 深度分析了您最近的语音对话，智能提取出以下最适合展开记忆共创的主题：
+    </view>
+    
+    <view style="display: flex; flex-direction: column; gap: 20rpx;">
+      <view wx:for="{{aiSuggestedThemes}}" wx:key="title" class="form-card" style="margin-top: 0; padding: 24rpx; background: #fffdf5; border-color: #fef3c7; display: flex; align-items: center; justify-content: space-between; gap: 16rpx;">
+        <view style="flex: 1;">
+          <view style="font-weight: 800; font-size: 28rpx; color: var(--text-dark);">{{item.title}}</view>
+          <view style="font-size: 24rpx; color: var(--text-muted); margin-top: 4rpx;">{{item.reason}}</view>
+        </view>
+        <button class="primary-button" style="width: 156rpx !important; min-height: 64rpx; font-size: 24rpx; border-radius: var(--radius-sm); margin: 0; flex-shrink: 0;" data-item="{{item}}" bindtap="claimAiTheme">
+          一键创建
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 📝 2. 自建主题表单 -->
+  <view class="form-card" style="margin-top: 36rpx;">
+    <view class="section-title">自建记忆主题</view>
     <view class="input-label">主题名称</view>
     <input class="input" value="{{title}}" bindinput="onTitleInput" placeholder="例如：大宝三岁这一年" />
     <view class="input-label">补充说明</view>
-    <textarea class="textarea" value="{{description}}" bindinput="onDescriptionInput" placeholder="例如：记录他说过的话、幼儿园趣事、旅行照片" />
+    <textarea class="textarea" value="{{description}}" bindinput="onDescriptionInput" placeholder="例如：记录他说过的话、幼儿园趣事、旅行照片" style="height: 120rpx;" />
 
-    <view class="mode-row">
+    <view class="mode-row" style="margin: 20rpx 0;">
       <view class="mode-pill {{mode === 'solo' ? 'active' : ''}}" bindtap="setSolo">独立完成</view>
       <view class="mode-pill {{mode === 'co_create' ? 'active' : ''}}" bindtap="setCoCreate">邀请共创</view>
     </view>
@@ -17,20 +44,73 @@
     <button class="primary-button form-action" bindtap="createTheme">创建主题</button>
   </view>
 
-  <view wx:for="{{themes}}" wx:key="id" class="theme-card" bindtap="openTheme" data-id="{{item.id}}">
-    <view class="theme-title">{{item.title}}</view>
-    <view class="theme-desc">{{item.description || '还没有说明'}}</view>
-    <view class="tag">{{item.mode === 'co_create' ? '可共创' : '独立'}}</view>
+  <!-- 📂 3. 记忆主题列表 -->
+  <view class="section-title" style="margin-top: 48rpx;">记忆主题列表</view>
+  <view wx:if="{{themes.length === 0}}" class="panel large-text" style="text-align: center; color: var(--text-muted);">
+    还没有主题，请在上方自建或认领 AI 推荐主题
+  </view>
+  
+  <view wx:for="{{themes}}" wx:key="id" class="theme-card {{currentTheme.id === item.id ? 'selected' : ''}}" bindtap="openTheme" data-id="{{item.id}}" style="position: relative; border-left: 10rpx solid {{currentTheme.id === item.id ? 'var(--primary)' : 'var(--secondary)'}};">
+    <view style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16rpx;">
+      <view class="theme-title" style="font-size: 32rpx; font-weight: 800; color: var(--text-dark);">{{item.title}}</view>
+      <view class="tag" style="background: {{item.source === 'AI' ? '#fef3c7' : 'var(--secondary-light)'}}; color: {{item.source === 'AI' ? '#b45309' : 'var(--secondary)'}};">
+        {{item.source === 'AI' ? '🤖 AI 总结' : '📝 自建'}}
+      </view>
+    </view>
+    <view class="theme-desc" style="font-size: 26rpx; color: var(--text-muted); margin-top: 8rpx;">{{item.description || '还没有说明'}}</view>
+    <view style="margin-top: 16rpx; display: flex; align-items: center; justify-content: space-between;">
+      <!-- 👥 参与人员标签展示 -->
+      <view style="font-size: 24rpx; color: var(--text-muted); display: flex; align-items: center; gap: 6rpx;">
+        👥 {{item.collaboratorList || '仅我自己参与'}}
+      </view>
+      <view style="font-size: 24rpx; font-weight: 800; color: var(--primary);">
+        {{currentTheme.id === item.id ? '正在管理人员' : '点击定义成员 ➡️'}}
+      </view>
+    </view>
   </view>
 
-  <view wx:if="{{currentTheme}}" class="form-card">
-    <view class="section-title">邀请共创</view>
-    <view class="input-label">邀请谁</view>
-    <input class="input" value="{{inviteName}}" bindinput="onInviteNameInput" placeholder="例如：妈妈" />
-    <view class="input-label">请 TA 补充什么</view>
-    <textarea class="textarea" value="{{invitePrompt}}" bindinput="onInvitePromptInput" placeholder="例如：帮忙补充孩子第一次走路那天的细节" />
-    <button class="secondary-button form-action" bindtap="inviteToTheme">生成邀请</button>
-    <view wx:if="{{sharePath}}" class="share-box">{{sharePath}}</view>
+  <!-- 👥 4. 选定主题内定义参与人员 -->
+  <view wx:if="{{currentTheme}}" class="form-card" style="margin-top: 36rpx; border-color: var(--primary);">
+    <view class="section-title">管理主题《{{currentTheme.title}}》参与成员</view>
+    
+    <!-- 成员列表展示 -->
+    <view style="margin-bottom: 24rpx;">
+      <view class="input-label" style="margin-bottom: 12rpx;">当前已定义参与成员：</view>
+      <view style="display: flex; flex-wrap: wrap; gap: 14rpx;">
+        <view class="tag" style="background: var(--primary-light); color: var(--primary); padding: 8rpx 20rpx; font-size: 26rpx; border-radius: var(--radius-sm);">
+          👑 我 (发起人)
+        </view>
+        <view wx:for="{{collaborators}}" wx:key="id" class="tag" style="background: var(--secondary-light); color: var(--secondary); padding: 8rpx 20rpx; font-size: 26rpx; border-radius: var(--radius-sm);">
+          👥 {{item.name}} ({{item.relation || '共同记录'}})
+        </view>
+      </view>
+    </view>
+
+    <!-- 成员邀请表单 -->
+    <view style="border-top: 2rpx solid var(--border-color); padding-top: 24rpx;">
+      <view class="input-label" style="font-weight: 800; color: var(--text-dark);">+ 定义并邀请新成员参与</view>
+      
+      <view class="input-label" style="margin-top: 16rpx;">新成员称呼</view>
+      <input class="input" value="{{inviteName}}" bindinput="onInviteNameInput" placeholder="例如：妈妈" />
+      
+      <view class="input-label">请 TA 补充什么 (AI 推荐称呼/事宜)</view>
+      <textarea class="textarea" value="{{invitePrompt}}" bindinput="onInvitePromptInput" placeholder="例如：帮忙补充大宝第一次学会走路那天的趣事细节" style="height: 100rpx;" />
+      
+      <button class="secondary-button form-action" bindtap="inviteToTheme" style="border-color: var(--secondary); color: var(--secondary);">
+        确认成员并生成微信邀请
+      </button>
+
+      <!-- 微信分享模块 -->
+      <view wx:if="{{sharePath}}" class="share-box" style="margin-top: 24rpx; background: #f0fdf4; border: 2rpx solid #bbf7d0; border-radius: var(--radius-md); padding: 24rpx;">
+        <view style="font-weight: 800; margin-bottom: 12rpx; color: #166534; display: flex; align-items: center; gap: 8rpx;">
+          <view class="status-dot" style="background: #166534;"></view>微信邀请卡片生成成功！
+        </view>
+        <view style="user-select: text; font-size: 26rpx; color: #155e75; margin-bottom: 18rpx;">邀请路径: {{sharePath}}</view>
+        <view style="display: flex; flex-direction: column; gap: 16rpx;">
+          <button class="primary-button" style="min-height: 84rpx; font-size: 28rpx; border-radius: var(--radius-sm); background: var(--secondary-gradient); border: none;" bindtap="copyShareLink">一键复制链接</button>
+          <button class="primary-button" style="min-height: 84rpx; font-size: 28rpx; border-radius: var(--radius-sm); background: #16a34a; box-shadow: 0 12rpx 28rpx rgba(22, 163, 74, 0.2); border: none;" open-type="share">🚀 发送微信分享卡片</button>
+        </view>
+      </view>
+    </view>
   </view>
 </view>
-

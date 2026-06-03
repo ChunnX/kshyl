@@ -1,33 +1,51 @@
 .form-card,
 .person-card {
-  margin-top: 28rpx;
-  padding: 28rpx;
-  background: #ffffff;
-  border: 2rpx solid #bae6fd;
-  border-radius: 18rpx;
-  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+  margin-top: 36rpx;
+  padding: 36rpx;
+  background: var(--card-bg);
+  border: 2rpx solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-smooth);
+  box-sizing: border-box;
+}
+
+.form-card:hover,
+.person-card:hover {
+  transform: translateY(-2rpx);
+  box-shadow: var(--shadow-lg);
 }
 
 .input-label {
-  margin-top: 20rpx;
-  margin-bottom: 12rpx;
+  margin-top: 24rpx;
+  margin-bottom: 14rpx;
   font-size: 30rpx;
   font-weight: 800;
-  color: #082f49;
+  color: var(--text-dark);
 }
 
 .input {
-  min-height: 92rpx;
-  padding: 0 24rpx;
-  border-radius: 16rpx;
-  border: 3rpx solid #7dd3fc;
-  background: #f8fcff;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 96rpx;
+  padding: 0 28rpx;
+  border-radius: var(--radius-sm);
+  border: 3rpx solid #e7e5e4;
+  background: #fafaf9;
   font-size: 32rpx;
-  color: #123f55;
+  color: var(--text-dark);
+  transition: var(--transition-smooth);
+}
+
+/* 💻 聚焦高亮微动效 */
+.input:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 12rpx rgba(217, 119, 6, 0.1);
 }
 
 .form-action {
-  margin-top: 28rpx;
+  margin-top: 36rpx;
 }
 
 .person-card {
@@ -38,14 +56,13 @@
 }
 
 .person-name {
-  font-size: 36rpx;
+  font-size: 38rpx;
   font-weight: 800;
-  color: #082f49;
+  color: var(--text-dark);
 }
 
 .person-relation {
-  margin-top: 8rpx;
+  margin-top: 10rpx;
   font-size: 30rpx;
-  color: #315f74;
+  color: var(--text-muted);
 }
-

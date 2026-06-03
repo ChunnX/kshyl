@@ -1,54 +1,70 @@
 <view class="page page-soft home safe-bottom">
-  <view class="eyebrow">家人的每日片刻</view>
-  <view class="title">把声音和故事留下来</view>
-  <view class="subtitle">父母的人生故事、孩子的成长瞬间、伴侣的日常心情，都可以用声音慢慢保存。</view>
-
-  <image class="hero-image" src="/assets/illustrations/voice-memory.svg" mode="aspectFit" />
-
-  <view class="promise-row">
-    <view class="promise-item">
-      <view class="promise-number">1</view>
-      <view class="promise-text">记录</view>
+  
+  <!-- 💻 1. 精致侧置图首部（左右布局，极速压缩空间） -->
+  <view class="home-header">
+    <view class="header-left">
+      <view class="home-eyebrow">家人的每日片刻</view>
+      <view class="home-title">把声音留下来</view>
+      <view class="home-subtitle">父母的人生故事、孩子成长瞬间，用声音温度慢慢珍藏。</view>
     </view>
-    <view class="promise-line"></view>
-    <view class="promise-item">
-      <view class="promise-number">2</view>
-      <view class="promise-text">整理</view>
-    </view>
-    <view class="promise-line"></view>
-    <view class="promise-item">
-      <view class="promise-number">3</view>
-      <view class="promise-text">珍藏</view>
+    <view class="header-right">
+      <!-- 🎨 1:1 比例的全新设计的极具艺术感 voice-memory.svg 图像 -->
+      <image class="header-hero-image" src="/assets/illustrations/voice-memory.svg" mode="aspectFit" />
     </view>
   </view>
 
-  <view class="trust-panel">
-    <view class="trust-item">
-      <view class="trust-dot"></view>
-      <view class="trust-text">默认只在家人之间保存</view>
+  <!-- 💻 2. 核心 2x2 弹性自适应网格（自适应单屏，极具亲和力与质感的温暖渐变卡片组） -->
+  <view class="dashboard-grid">
+    
+    <!-- 🎙️ 语音陪聊（主卡片 - 活力日落橙渐变，匹配头像语音话泡） -->
+    <view class="grid-card card-primary-blue" bindtap="goConversation">
+      <view class="card-content">
+        <image class="card-icon" src="/assets/icons/chat-white.svg" mode="aspectFit" />
+        <view class="card-text-container">
+          <view class="card-title">语音记事与陪聊</view>
+          <view class="card-desc">对话模式与倾诉录音</view>
+        </view>
+      </view>
     </view>
-    <view class="trust-item">
-      <view class="trust-dot"></view>
-      <view class="trust-text">父母回忆和孩子成长都能记录</view>
+
+    <!-- 📖 整理成册（主卡片 - 深青绿渐变，匹配头像底座书本封面） -->
+    <view class="grid-card card-primary-green" bindtap="goBook">
+      <view class="card-content">
+        <image class="card-icon" src="/assets/icons/book-white.svg" mode="aspectFit" />
+        <view class="card-text-container">
+          <view class="card-title">整理成册</view>
+          <view class="card-desc">生成家庭回忆录</view>
+        </view>
+      </view>
     </view>
+
+    <!-- 📁 家庭记忆（次卡片 - 温暖琥珀金渐变，匹配头像金色回忆星光） -->
+    <view class="grid-card card-secondary-amber" bindtap="goStories">
+      <view class="card-content">
+        <image class="card-icon" src="/assets/icons/archive-white.svg" mode="aspectFit" />
+        <view class="card-text-container">
+          <view class="card-title">家庭记忆</view>
+          <view class="card-desc">浏览已存回忆</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 👥 人物主题（次卡片 - 柔和珊瑚红渐变，匹配头像中心红心） -->
+    <view class="grid-card card-secondary-coral" bindtap="goFamily">
+      <view class="card-content">
+        <image class="card-icon" src="/assets/icons/check-white.svg" mode="aspectFit" />
+        <view class="card-text-container">
+          <view class="card-title">人物与主题</view>
+          <view class="card-desc">管理共创网络</view>
+        </view>
+      </view>
+    </view>
+
   </view>
 
-  <view class="actions">
-    <button class="primary-button" bindtap="goConversation">
-      <image class="button-icon" src="/assets/icons/chat-white.svg" mode="aspectFit" />
-      语音陪聊
-    </button>
-    <button class="primary-button" bindtap="goRecord">
-      <image class="button-icon" src="/assets/icons/mic-white.svg" mode="aspectFit" />
-      单独录一段
-    </button>
-    <button class="secondary-button" bindtap="goStories">
-      <image class="button-icon dark-icon" src="/assets/icons/archive.svg" mode="aspectFit" />
-      看看家庭记忆
-    </button>
-    <button class="secondary-button" bindtap="goFamily">
-      <image class="button-icon dark-icon" src="/assets/icons/check.svg" mode="aspectFit" />
-      人物与主题
-    </button>
+  <!-- 💻 3. 极简单行信任页脚（安全认证，零占位） -->
+  <view class="trust-footer">
+    <text class="trust-footer-text">🛡️ 默认私密保护 • 开启声音温度记忆之旅</text>
   </view>
+
 </view>

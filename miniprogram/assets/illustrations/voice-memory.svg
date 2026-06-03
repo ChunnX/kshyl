@@ -1,13 +1,79 @@
-<svg width="560" height="360" viewBox="0 0 560 360" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="560" height="360" rx="36" fill="#E0F2FE"/>
-  <circle cx="452" cy="72" r="44" fill="#BBF7D0"/>
-  <circle cx="98" cy="286" r="58" fill="#FDE68A"/>
-  <path d="M124 226c42-62 92-92 150-92s108 30 150 92" stroke="#0369A1" stroke-width="16" stroke-linecap="round"/>
-  <rect x="184" y="78" width="192" height="210" rx="96" fill="#FFFFFF" stroke="#0369A1" stroke-width="12"/>
-  <rect x="248" y="118" width="64" height="100" rx="32" fill="#22C55E"/>
-  <path d="M222 228c16 26 36 39 58 39s42-13 58-39" stroke="#0C4A6E" stroke-width="12" stroke-linecap="round"/>
-  <path d="M280 267v42" stroke="#0C4A6E" stroke-width="12" stroke-linecap="round"/>
-  <path d="M232 309h96" stroke="#0C4A6E" stroke-width="12" stroke-linecap="round"/>
-  <path d="M88 156v44M124 132v92M436 132v92M472 156v44" stroke="#38BDF8" stroke-width="14" stroke-linecap="round"/>
-</svg>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Sunset Orange Gradient -->
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFA853"/>
+      <stop offset="100%" stop-color="#F25C22"/>
+    </linearGradient>
+    
+    <!-- Deep Teal Gradient -->
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2CA0AC"/>
+      <stop offset="100%" stop-color="#145A65"/>
+    </linearGradient>
 
+    <!-- Warm Cream Background Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFDF9"/>
+      <stop offset="100%" stop-color="#FFF5DF"/>
+    </radialGradient>
+
+    <!-- Coral Heart Gradient -->
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF7575"/>
+      <stop offset="100%" stop-color="#E83C3C"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 1. Ambient Background Circle -->
+  <circle cx="100" cy="100" r="96" fill="url(#bgGrad)" stroke="#F3E5C8" stroke-width="2"/>
+
+  <!-- 2. Concentric Voice Waves (Dashed Orbits) -->
+  <circle cx="65" cy="95" r="45" stroke="#FFA853" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.4"/>
+  <circle cx="65" cy="95" r="58" stroke="#2CA0AC" stroke-width="1" stroke-dasharray="6 4" opacity="0.3"/>
+
+  <!-- 3. Flowing Harmony Waves (Connecting Voice and Book) -->
+  <path d="M 65 95 C 90 70, 110 120, 135 90" stroke="url(#orangeGrad)" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M 65 95 C 85 110, 115 70, 135 110" stroke="url(#tealGrad)" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.6"/>
+
+  <!-- 4. Left Side: Cozy Voice Sphere (Active Voice Recorder & AI) -->
+  <!-- Outer glowing teal ring -->
+  <circle cx="65" cy="95" r="26" fill="#FFFFFF" stroke="#2CA0AC" stroke-width="2"/>
+  <!-- Inner vibrant orange gradient sphere -->
+  <circle cx="65" cy="95" r="20" fill="url(#orangeGrad)"/>
+  <!-- Minimalist High-Fidelity Microphone Icon -->
+  <rect x="62" y="86" width="6" height="12" rx="3" fill="#FFFFFF"/>
+  <path d="M 58 91 C 58 97, 72 97, 72 91" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+  <line x1="65" y1="97" x2="65" y2="101" stroke="#FFFFFF" stroke-width="2"/>
+  <line x1="61" y1="101" x2="69" y2="101" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- 5. Right Side: Beautiful Unfolding Storybook -->
+  <g transform="translate(115, 80)">
+    <!-- Book Cover Base (Deep Teal) -->
+    <path d="M 5 24 L 7 28 C 9 32, 22 33, 35 36 L 35 12 C 22 9, 9 8, 5 4 Z" fill="url(#tealGrad)"/>
+    <path d="M 35 36 C 48 33, 61 32, 65 28 L 63 24 M 35 12 C 48 9, 61 8, 65 4 Z" fill="url(#tealGrad)"/>
+    <!-- Page 1 (Cream Inner Page) -->
+    <path d="M 7 21 C 12 24, 23 25, 35 28 L 35 5 C 23 2, 12 1, 7 0 Z" fill="#FFFDF0" stroke="#F3E5C8" stroke-width="1"/>
+    <!-- Page 2 (Pure White Main Top Page) -->
+    <path d="M 35 28 C 47 25, 58 24, 63 21 L 63 0 C 58 1, 47 2, 35 5 Z" fill="#FFFFFF" stroke="#F3E5C8" stroke-width="1"/>
+    
+    <!-- Stylized writing lines in the book -->
+    <line x1="12" y1="9" x2="28" y2="9" stroke="#2CA0AC" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+    <line x1="12" y1="14" x2="28" y2="14" stroke="#2CA0AC" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+    <line x1="12" y1="19" x2="24" y2="19" stroke="#2CA0AC" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+    <line x1="42" y1="9" x2="58" y2="9" stroke="#2CA0AC" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+    <line x1="42" y1="14" x2="58" y2="14" stroke="#2CA0AC" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+    <line x1="42" y1="19" x2="54" y2="19" stroke="#2CA0AC" stroke-width="1.5" opacity="0.3" stroke-linecap="round"/>
+  </g>
+
+  <!-- 6. Center Top: Floating Coral Red Heart (Love & Warmth) -->
+  <path d="M 100 68 C 100 68, 95 62, 91 62 C 86 62, 83 65, 83 70 C 83 75, 89 80, 100 88 C 111 80, 117 75, 117 70 C 117 65, 114 62, 109 62 C 105 62, 100 68, 100 68 Z" fill="url(#heartGrad)"/>
+
+  <!-- 7. Sparkling Golden Memory Stars -->
+  <!-- Star 1 -->
+  <path d="M 108 42 L 109.5 39 L 111 42 L 114 43.5 L 111 45 L 109.5 48 L 108 45 L 105 43.5 Z" fill="#FFA853"/>
+  <!-- Star 2 -->
+  <path d="M 148 58 L 149 56 L 150 58 L 152 59 L 150 60 L 149 62 L 148 60 L 146 59 Z" fill="#2CA0AC"/>
+  <!-- Star 3 -->
+  <path d="M 45 136 L 46.5 133 L 48 136 L 51 137.5 L 48 139 L 46.5 142 L 45 139 L 42 137.5 Z" fill="#FFA853"/>
+</svg>

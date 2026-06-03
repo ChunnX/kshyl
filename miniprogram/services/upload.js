@@ -1,4 +1,5 @@
-const BASE_URL = 'http://localhost:3000/api';
+const CONFIG = require('../config');
+const BASE_URL = CONFIG.BASE_URL;
 
 function uploadRecording(filePath, personId) {
   return new Promise((resolve, reject) => {

@@ -2,6 +2,10 @@ node_modules/
 server/node_modules/
 server/uploads/
 server/data/
+server/server.zip
+server/server/
+server/prisma/dev.db
+server/prisma/dev.db-journal
 server/*.log
 .env
 server/.env

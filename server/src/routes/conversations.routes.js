@@ -4,10 +4,14 @@ const store = require('../db/memory-store');
 
 const router = express.Router();
 
-router.get('/persons/:personId/conversations', (req, res) => {
-  res.json({
-    conversations: store.listConversations(req.params.personId)
-  });
+router.get('/persons/:personId/conversations', async (req, res, next) => {
+  try {
+    res.json({
+      conversations: await store.listConversations(req.params.personId)
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/persons/:personId/conversations', async (req, res, next) => {
@@ -19,17 +23,21 @@ router.post('/persons/:personId/conversations', async (req, res, next) => {
   }
 });
 
-router.get('/conversations/:conversationId/messages', (req, res) => {
-  const conversation = store.getConversation(req.params.conversationId);
-  if (!conversation) {
-    res.status(404).json({ message: 'Conversation not found' });
-    return;
-  }
+router.get('/conversations/:conversationId/messages', async (req, res, next) => {
+  try {
+    const conversation = await store.getConversation(req.params.conversationId);
+    if (!conversation) {
+      res.status(404).json({ message: 'Conversation not found' });
+      return;
+    }
 
-  res.json({
-    conversation,
-    messages: store.listConversationMessages(req.params.conversationId)
-  });
+    res.json({
+      conversation,
+      messages: await store.listConversationMessages(req.params.conversationId)
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/conversations/:conversationId/turns', async (req, res, next) => {
@@ -42,4 +50,3 @@ router.post('/conversations/:conversationId/turns', async (req, res, next) => {
 });
 
 module.exports = router;
-

@@ -1,94 +1,114 @@
 .form-card,
 .theme-card {
-  margin-top: 28rpx;
-  padding: 28rpx;
-  background: #ffffff;
-  border: 2rpx solid #bae6fd;
-  border-radius: 18rpx;
-  box-shadow: 0 14rpx 28rpx rgba(12, 74, 110, 0.08);
+  margin-top: 36rpx;
+  padding: 36rpx;
+  background: var(--card-bg);
+  border: 2rpx solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-smooth);
+  box-sizing: border-box;
+}
+
+.form-card:hover,
+.theme-card:hover {
+  transform: translateY(-2rpx);
+  box-shadow: var(--shadow-lg);
 }
 
 .input-label {
-  margin-top: 20rpx;
-  margin-bottom: 12rpx;
+  margin-top: 24rpx;
+  margin-bottom: 14rpx;
   font-size: 30rpx;
   font-weight: 800;
-  color: #082f49;
+  color: var(--text-dark);
 }
 
 .input,
 .textarea {
   width: 100%;
   box-sizing: border-box;
-  padding: 0 24rpx;
-  border-radius: 16rpx;
-  border: 3rpx solid #7dd3fc;
-  background: #f8fcff;
+  padding: 0 28rpx;
+  border-radius: var(--radius-sm);
+  border: 3rpx solid #e7e5e4;
+  background: #fafaf9;
   font-size: 32rpx;
-  color: #123f55;
+  color: var(--text-dark);
+  transition: var(--transition-smooth);
 }
 
 .input {
-  min-height: 92rpx;
+  min-height: 96rpx;
 }
 
 .textarea {
-  min-height: 180rpx;
-  padding-top: 22rpx;
-  line-height: 1.55;
+  min-height: 190rpx;
+  padding-top: 24rpx;
+  line-height: 1.6;
+}
+
+/* 💻 聚焦高亮 */
+.input:focus,
+.textarea:focus {
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 12rpx rgba(217, 119, 6, 0.1);
 }
 
 .mode-row {
-  margin-top: 24rpx;
+  margin-top: 28rpx;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 18rpx;
+  gap: 20rpx;
 }
 
 .mode-pill {
-  min-height: 82rpx;
-  border-radius: 16rpx;
-  border: 3rpx solid #bae6fd;
+  min-height: 86rpx;
+  border-radius: var(--radius-sm);
+  border: 3rpx solid #e7e5e4;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30rpx;
   font-weight: 800;
-  color: #075985;
+  color: var(--text-muted);
+  transition: var(--transition-smooth);
 }
 
 .mode-pill.active {
-  background: #0369a1;
-  border-color: #0369a1;
+  background: var(--primary-gradient); /* 💻 落日金渐变 */
+  border-color: var(--primary);
   color: #ffffff;
+  box-shadow: 0 8rpx 20rpx rgba(217, 119, 6, 0.2);
 }
 
 .form-action {
-  margin-top: 28rpx;
+  margin-top: 36rpx;
 }
 
 .theme-title {
-  font-size: 36rpx;
+  font-size: 38rpx;
   font-weight: 800;
-  color: #082f49;
+  color: var(--text-dark);
 }
 
 .theme-desc {
-  margin-top: 12rpx;
-  margin-bottom: 18rpx;
+  margin-top: 14rpx;
+  margin-bottom: 20rpx;
   font-size: 30rpx;
-  line-height: 1.55;
-  color: #315f74;
+  line-height: 1.6;
+  color: var(--text-muted);
 }
 
 .share-box {
-  margin-top: 20rpx;
-  padding: 20rpx;
-  border-radius: 16rpx;
-  background: #ecfdf5;
-  color: #14532d;
+  margin-top: 24rpx;
+  padding: 24rpx 28rpx;
+  border-radius: var(--radius-sm);
+  background: #f0fdf4; /* 💻 暖石绿背景，用于分享提示 */
+  border: 2rpx solid #bbf7d0;
+  color: #166534;
   font-size: 28rpx;
-  line-height: 1.5;
+  line-height: 1.55;
   word-break: break-all;
+  box-shadow: var(--shadow-sm);
 }
-

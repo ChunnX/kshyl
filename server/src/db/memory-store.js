@@ -1,3 +1,8 @@
+if (process.env.DATABASE_URL) {
+  module.exports = require('./prisma-store');
+  return;
+}
+
 const fs = require('fs');
 const path = require('path');
 const { randomUUID } = require('crypto');

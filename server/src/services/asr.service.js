@@ -20,11 +20,53 @@ async function transcribeWithMock(recording) {
   };
 }
 
-async function transcribeWithTencent() {
+const fs = require('fs');
+const path = require('path');
+const tencentApi = require('../utils/tencent-api');
+
+async function transcribeWithTencent(recording) {
   assertEnv(['TENCENT_ASR_SECRET_ID', 'TENCENT_ASR_SECRET_KEY', 'TENCENT_ASR_APP_ID']);
-  const error = new Error('Tencent ASR adapter is configured but not implemented yet. Add Tencent SDK call in server/src/services/asr.service.js.');
-  error.statusCode = 501;
-  throw error;
+
+  const filePath = path.resolve(process.cwd(), recording.audioUrl);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Audio file not found: ${recording.audioUrl}`);
+  }
+
+  const fileBuffer = fs.readFileSync(filePath);
+  const base64Data = fileBuffer.toString('base64');
+  const dataLen = fileBuffer.length;
+
+  const payload = {
+    ProjectId: 0,
+    SubServiceType: 2,
+    EngSerInfoSpec: '16k_zh',
+    SourceType: 1,
+    VoiceFormat: 'mp3',
+    Data: base64Data,
+    DataLen: dataLen
+  };
+
+  const response = await tencentApi.request({
+    secretId: process.env.TENCENT_ASR_SECRET_ID,
+    secretKey: process.env.TENCENT_ASR_SECRET_KEY,
+    service: 'asr',
+    action: 'SentenceRecognition',
+    version: '2019-06-14',
+    region: process.env.TENCENT_ASR_REGION || 'ap-guangzhou',
+    payload
+  });
+
+  if (response.Response && response.Response.Error) {
+    throw new Error(`Tencent ASR Error: ${response.Response.Error.Message}`);
+  }
+
+  const resultText = response.Response ? response.Response.Result : '';
+
+  return {
+    rawText: resultText || '（未能识别到语音内容）',
+    confidence: 0.95,
+    provider: 'tencent'
+  };
 }
 
 async function transcribeWithAliyun() {

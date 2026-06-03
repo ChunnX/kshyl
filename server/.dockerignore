@@ -1,0 +1,10 @@
+.env
+node_modules
+npm-debug.log
+*.log
+uploads
+data
+server.zip
+server
+prisma/dev.db
+prisma/dev.db-journal
