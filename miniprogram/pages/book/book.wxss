@@ -12,3 +12,27 @@
 .action {
   margin-top: 34rpx;
 }
+
+.book-outline {
+  margin-top: 28rpx;
+  border-top: 2rpx solid #e3eef4;
+  padding-top: 18rpx;
+}
+
+.outline-item {
+  display: flex;
+  align-items: baseline;
+  padding: 12rpx 0;
+}
+
+.outline-chapter {
+  flex: none;
+  width: 130rpx;
+  font-size: 28rpx;
+  color: #7aa7bd;
+}
+
+.outline-title {
+  font-size: 32rpx;
+  color: #123f55;
+}

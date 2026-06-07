@@ -1,7 +1,16 @@
 const CONFIG = require('../config');
 const BASE_URL = CONFIG.BASE_URL;
 
+function getToken() {
+  try {
+    return wx.getStorageSync('token') || '';
+  } catch (error) {
+    return '';
+  }
+}
+
 function request(path, options = {}) {
+  const token = getToken();
   return new Promise((resolve, reject) => {
     wx.request({
       url: `${BASE_URL}${path}`,
@@ -9,6 +18,7 @@ function request(path, options = {}) {
       data: options.data || {},
       header: {
         'content-type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.header || {})
       },
       success(res) {
@@ -25,6 +35,12 @@ function request(path, options = {}) {
 
 module.exports = {
   request,
+  wechatLogin(code) {
+    return request('/auth/wechat-login', {
+      method: 'POST',
+      data: { code }
+    });
+  },
   getPerson(personId) {
     return request(`/persons/${personId}`);
   },

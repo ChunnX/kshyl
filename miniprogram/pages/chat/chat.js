@@ -5,6 +5,7 @@ Page({
     personId: 'person_demo_001',
     message: '',
     reply: '这个功能会在完成授权后开放。',
+    disclaimer: '',
     consentStatus: 'pending'
   },
 
@@ -44,6 +45,7 @@ Page({
       const data = await api.chat(this.data.personId, this.data.message);
       this.setData({
         reply: data.reply,
+        disclaimer: data.disclaimer || '',
         message: ''
       });
     } catch (error) {

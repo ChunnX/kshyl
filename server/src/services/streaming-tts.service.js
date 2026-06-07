@@ -1,21 +1,29 @@
 const env = require('../config/env');
+const tencentTts = require('./tencent-tts');
 
+/**
+ * Realtime reply TTS. Mock returns text only (audioUrl null) so offline dev/smoke
+ * stays silent and fast; tencent synthesizes the segment to an mp3 URL the client plays.
+ */
 async function synthesizeRealtimeReply(text) {
-  if (env.streamingTtsProvider === 'mock') {
+  if (env.streamingTtsProvider === 'tencent') {
+    const result = await tencentTts.synthesizeToFile(text);
     return {
-      type: 'tts_text',
+      type: 'tts_audio',
       text,
-      audioUrl: null,
-      provider: 'mock'
+      audioUrl: result.audioUrl,
+      provider: 'tencent'
     };
   }
 
-  const error = new Error('Streaming TTS adapter is not implemented yet. Add provider call in server/src/services/streaming-tts.service.js.');
-  error.statusCode = 501;
-  throw error;
+  return {
+    type: 'tts_text',
+    text,
+    audioUrl: null,
+    provider: 'mock'
+  };
 }
 
 module.exports = {
   synthesizeRealtimeReply
 };
-

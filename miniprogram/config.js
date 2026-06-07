@@ -6,7 +6,7 @@
  * tunnel - Public HTTPS/WSS tunnel, such as cpolar/ngrok/localtunnel.
  * cloud  - Tencent CloudBase run service.
  */
-const MODE = 'lan';
+const MODE = 'local';
 
 const LAN_IP = '192.168.200.38';
 const TUNNEL_HOST = 'xxxx.cpolar.io';

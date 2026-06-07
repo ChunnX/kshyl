@@ -6,6 +6,11 @@ const WebSocket = require('ws');
 process.env.DATA_FILE = 'data/smoke-test-store.json';
 process.env.STREAMING_ASR_PROVIDER = 'mock';
 process.env.STREAMING_TTS_PROVIDER = 'mock';
+process.env.DEV_AUTH_BYPASS = 'true';
+// Isolated storage dir so the book-export file check can be cleaned up safely.
+process.env.STORAGE_DIR = 'data/smoke-storage';
+
+const env = require('../src/config/env');
 
 function listen() {
   return new Promise((resolve) => {
@@ -111,6 +116,10 @@ async function main() {
       method: 'POST'
     });
     assert(book.data.book.summary, 'book summary missing');
+    assert(book.data.book.downloadUrl, 'book downloadUrl missing');
+    const bookKey = book.data.book.downloadUrl.replace(`${env.storagePublicPath}/`, '');
+    const bookFilePath = path.resolve(process.cwd(), env.storageDir, bookKey);
+    assert(fs.existsSync(bookFilePath), 'exported book file not found on disk');
 
     const conversation = await request(baseUrl, '/api/persons/person_demo_001/conversations', {
       method: 'POST',
@@ -191,9 +200,25 @@ async function main() {
     });
     assert(storyInvite.response.status === 201, 'story invitation failed');
 
+    // Privacy: deletion round-trip.
+    const tempRecording = await request(baseUrl, '/api/recordings', {
+      method: 'POST',
+      body: JSON.stringify({ personId: 'person_demo_001', mockText: '临时记忆，用于删除测试。' })
+    });
+    const tempStory = await request(baseUrl, `/api/recordings/${tempRecording.data.recording.id}/stories`, {
+      method: 'POST'
+    });
+    const deleted = await request(baseUrl, `/api/stories/${tempStory.data.story.id}`, {
+      method: 'DELETE'
+    });
+    assert(deleted.response.status === 200 && deleted.data.deleted === true, 'story deletion failed');
+    const goneStory = await request(baseUrl, `/api/stories/${tempStory.data.story.id}`);
+    assert(goneStory.response.status === 404, 'deleted story should be 404');
+
     console.log('Smoke test passed');
   } finally {
     server.close();
+    fs.rmSync(path.resolve(process.cwd(), env.storageDir), { recursive: true, force: true });
   }
 }
 

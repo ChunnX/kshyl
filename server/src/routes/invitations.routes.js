@@ -1,13 +1,36 @@
 const express = require('express');
 const store = require('../db/memory-store');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Resolves the owning user of an invitation via its theme or story → person.
+async function invitationOwnerId(invitation) {
+  if (invitation.themeId) {
+    const theme = await store.getTheme(invitation.themeId);
+    return theme ? theme.ownerUserId : null;
+  }
+  if (invitation.storyId) {
+    const story = await store.getStory(invitation.storyId);
+    if (!story) {
+      return null;
+    }
+    const person = await store.getPerson(story.personId);
+    return person ? person.ownerUserId : null;
+  }
+  return null;
+}
 
 router.get('/:inviteCode', async (req, res) => {
   try {
     const invitation = await store.getInvitationByCode(req.params.inviteCode);
     if (!invitation) {
       res.status(404).json({ message: 'Invitation not found' });
+      return;
+    }
+
+    if (invitation.status === 'revoked') {
+      res.status(410).json({ message: '该邀请链接已被撤销' });
       return;
     }
 
@@ -38,6 +61,11 @@ router.post('/:inviteCode/contributions', async (req, res) => {
     const invitation = await store.getInvitationByCode(req.params.inviteCode);
     if (!invitation) {
       res.status(404).json({ message: 'Invitation not found' });
+      return;
+    }
+
+    if (invitation.status === 'revoked') {
+      res.status(410).json({ message: '该邀请链接已被撤销' });
       return;
     }
 
@@ -74,5 +102,26 @@ router.post('/:inviteCode/contributions', async (req, res) => {
   }
 });
 
-module.exports = router;
+// Revoke a share link. Authed + owner-only (per-route guard since this router is public).
+router.post('/:inviteCode/revoke', requireAuth, async (req, res, next) => {
+  try {
+    const invitation = await store.getInvitationByCode(req.params.inviteCode);
+    if (!invitation) {
+      res.status(404).json({ message: 'Invitation not found' });
+      return;
+    }
 
+    const ownerId = await invitationOwnerId(invitation);
+    if (ownerId && ownerId !== req.userId) {
+      res.status(404).json({ message: 'Invitation not found' });
+      return;
+    }
+
+    const updated = await store.revokeInvitation(req.params.inviteCode);
+    res.json({ invitation: updated });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;

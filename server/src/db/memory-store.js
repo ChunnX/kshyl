@@ -9,9 +9,11 @@ const { randomUUID } = require('crypto');
 const env = require('../config/env');
 
 const initialState = {
+  users: [],
   people: [
     {
       id: 'person_demo_001',
+      ownerUserId: 'user_demo_001',
       name: '爸爸',
       relation: 'father',
       consentStatus: 'pending',
@@ -59,6 +61,26 @@ function saveState() {
   const tempPath = `${dataFilePath}.tmp`;
   fs.writeFileSync(tempPath, JSON.stringify(state, null, 2), 'utf8');
   fs.renameSync(tempPath, dataFilePath);
+}
+
+function getUserByOpenid(openid) {
+  return state.users.find((user) => user.openid === openid);
+}
+
+function upsertUserByOpenid(data) {
+  let user = getUserByOpenid(data.openid);
+  if (!user) {
+    user = {
+      // Keep the demo identity stable so it owns the seeded demo person.
+      id: data.openid === 'openid_demo' ? 'user_demo_001' : randomUUID(),
+      openid: data.openid,
+      role: data.role || 'family',
+      createdAt: new Date().toISOString()
+    };
+    state.users.push(user);
+    saveState();
+  }
+  return user;
 }
 
 function createRecording(data) {
@@ -245,6 +267,47 @@ function listConversationMessages(conversationId) {
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 }
 
+function deleteRecording(id) {
+  state.recordings = state.recordings.filter((recording) => recording.id !== id);
+  state.transcripts = state.transcripts.filter((transcript) => transcript.recordingId !== id);
+  saveState();
+  return { id };
+}
+
+function deleteStory(id) {
+  state.stories = state.stories.filter((story) => story.id !== id);
+  state.storyVersions = state.storyVersions.filter((version) => version.storyId !== id);
+  saveState();
+  return { id };
+}
+
+function getBook(id) {
+  return state.books.find((book) => book.id === id);
+}
+
+function deleteBook(id) {
+  state.books = state.books.filter((book) => book.id !== id);
+  saveState();
+  return { id };
+}
+
+function deletePerson(id) {
+  const stories = state.stories.filter((story) => story.personId === id).map((story) => story.id);
+  state.stories = state.stories.filter((story) => story.personId !== id);
+  state.storyVersions = state.storyVersions.filter((version) => !stories.includes(version.storyId));
+  state.recordings = state.recordings.filter((recording) => recording.personId !== id);
+  state.books = state.books.filter((book) => book.personId !== id);
+  const conversationIds = state.conversations.filter((c) => c.personId === id).map((c) => c.id);
+  state.conversations = state.conversations.filter((c) => c.personId !== id);
+  state.conversationMessages = state.conversationMessages.filter((m) => !conversationIds.includes(m.conversationId));
+  state.photos = state.photos.filter((photo) => photo.personId !== id);
+  state.themes = state.themes.filter((theme) => theme.personId !== id);
+  state.voiceProfiles = state.voiceProfiles.filter((profile) => profile.personId !== id);
+  state.people = state.people.filter((person) => person.id !== id);
+  saveState();
+  return { id };
+}
+
 function createPhoto(data) {
   const photo = {
     id: randomUUID(),
@@ -254,6 +317,16 @@ function createPhoto(data) {
   state.photos.push(photo);
   saveState();
   return photo;
+}
+
+function getPhoto(id) {
+  return state.photos.find((photo) => photo.id === id);
+}
+
+function deletePhoto(id) {
+  state.photos = state.photos.filter((photo) => photo.id !== id);
+  saveState();
+  return { id };
 }
 
 function listPhotos(filter = {}) {
@@ -359,6 +432,17 @@ function getInvitationByCode(inviteCode) {
   return state.invitations.find((invitation) => invitation.inviteCode === inviteCode);
 }
 
+function revokeInvitation(inviteCode) {
+  const invitation = getInvitationByCode(inviteCode);
+  if (!invitation) {
+    return null;
+  }
+  invitation.status = 'revoked';
+  invitation.updatedAt = new Date().toISOString();
+  saveState();
+  return invitation;
+}
+
 function listInvitations(filter = {}) {
   return state.invitations
     .filter((invitation) => {
@@ -409,19 +493,26 @@ function listContributions(filter = {}) {
 }
 
 module.exports = {
+  getUserByOpenid,
+  upsertUserByOpenid,
   createRecording,
   getRecording,
+  deleteRecording,
   createTranscript,
   createStory,
   listStories,
   getStory,
   updateStory,
+  deleteStory,
   getPerson,
   createPerson,
   listPeople,
   updatePerson,
+  deletePerson,
   createBook,
   listBooks,
+  getBook,
+  deleteBook,
   createConversation,
   getConversation,
   updateConversation,
@@ -429,6 +520,8 @@ module.exports = {
   addConversationMessage,
   listConversationMessages,
   createPhoto,
+  getPhoto,
+  deletePhoto,
   listPhotos,
   createTheme,
   getTheme,
@@ -438,6 +531,7 @@ module.exports = {
   listThemeCollaborators,
   createInvitation,
   getInvitationByCode,
+  revokeInvitation,
   listInvitations,
   createContribution,
   listContributions

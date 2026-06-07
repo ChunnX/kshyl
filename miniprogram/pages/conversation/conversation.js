@@ -1,6 +1,17 @@
 const recorder = require('../../services/recorder');
 const upload = require('../../services/upload');
 const realtime = require('../../services/realtime');
+const CONFIG = require('../../config');
+
+// Synthesized speech is served from the backend origin (BASE_URL without /api).
+const FILE_BASE = CONFIG.BASE_URL.replace(/\/api\/?$/, '');
+
+function resolveAudioUrl(url) {
+  if (!url) {
+    return '';
+  }
+  return /^https?:\/\//.test(url) ? url : `${FILE_BASE}${url}`;
+}
 
 Page({
   data: {
@@ -29,6 +40,10 @@ Page({
   onUnload() {
     if (this.realtimeClient) {
       this.realtimeClient.close();
+    }
+    if (this.audioCtx) {
+      this.audioCtx.destroy();
+      this.audioCtx = null;
     }
   },
 
@@ -244,13 +259,18 @@ Page({
   },
 
   playAssistantAudio(message) {
-    if (!message || !message.audioUrl) {
+    const src = resolveAudioUrl(message && message.audioUrl);
+    if (!src) {
       return;
     }
 
+    if (this.audioCtx) {
+      this.audioCtx.destroy();
+    }
     const audio = wx.createInnerAudioContext();
-    audio.src = message.audioUrl;
+    audio.src = src;
     audio.play();
+    this.audioCtx = audio;
   }
 });
 

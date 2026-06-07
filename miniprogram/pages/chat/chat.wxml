@@ -13,6 +13,7 @@
   <view class="panel">
     <view class="section-title">回答</view>
     <view class="reply-text">{{reply}}</view>
+    <view wx:if="{{disclaimer}}" class="disclaimer-text">{{disclaimer}}</view>
   </view>
 
   <view class="input-label">想问些什么</view>
