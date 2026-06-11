@@ -1,5 +1,6 @@
 const CONFIG = require('../config');
 const BASE_URL = CONFIG.BASE_URL;
+let loginPromise = null;
 
 function getToken() {
   try {
@@ -9,7 +10,7 @@ function getToken() {
   }
 }
 
-function request(path, options = {}) {
+function rawRequest(path, options = {}) {
   const token = getToken();
   return new Promise((resolve, reject) => {
     wx.request({
@@ -26,17 +27,87 @@ function request(path, options = {}) {
           resolve(res.data);
           return;
         }
-        reject(new Error(res.data && res.data.message ? res.data.message : '请求失败'));
+        const error = new Error(res.data && res.data.message ? res.data.message : '请求失败');
+        error.statusCode = res.statusCode;
+        reject(error);
       },
       fail: reject
     });
   });
 }
 
+function ensureLogin(force = false) {
+  const token = getToken();
+  if (token && !force) {
+    return Promise.resolve({ token });
+  }
+  if (loginPromise) {
+    return loginPromise;
+  }
+
+  if (force) {
+    wx.removeStorageSync('token');
+  }
+
+  loginPromise = new Promise((resolve, reject) => {
+    wx.login({
+      success(res) {
+        if (!res.code) {
+          reject(new Error('微信登录失败'));
+          return;
+        }
+        rawRequest('/auth/wechat-login', {
+          method: 'POST',
+          data: { code: res.code }
+        }).then((data) => {
+          if (!data || !data.token) {
+            throw new Error('登录响应缺少 token');
+          }
+          wx.setStorageSync('token', data.token);
+          resolve(data);
+        }).catch(reject);
+      },
+      fail: reject
+    });
+  });
+
+  loginPromise.then(
+    () => {
+      loginPromise = null;
+    },
+    () => {
+      loginPromise = null;
+    }
+  );
+  return loginPromise;
+}
+
+function request(path, options = {}) {
+  if (options.auth === false) {
+    return rawRequest(path, options);
+  }
+
+  return ensureLogin()
+    .catch(() => null)
+    .then(() => rawRequest(path, options))
+    .catch((error) => {
+      if (error.statusCode !== 401 || options._retried) {
+        throw error;
+      }
+      return ensureLogin(true).then(() =>
+        rawRequest(path, {
+          ...options,
+          _retried: true
+        })
+      );
+    });
+}
+
 module.exports = {
   request,
+  ensureLogin,
   wechatLogin(code) {
-    return request('/auth/wechat-login', {
+    return rawRequest('/auth/wechat-login', {
       method: 'POST',
       data: { code }
     });
@@ -90,12 +161,13 @@ module.exports = {
     });
   },
   getInvitation(inviteCode) {
-    return request(`/invitations/${inviteCode}`);
+    return request(`/invitations/${inviteCode}`, { auth: false });
   },
   submitContribution(inviteCode, payload) {
     return request(`/invitations/${inviteCode}/contributions`, {
       method: 'POST',
-      data: payload
+      data: payload,
+      auth: false
     });
   },
   getPersonStories(personId) {

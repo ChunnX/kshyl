@@ -66,7 +66,7 @@ async function synthesizeToFile(text) {
   const buffer = Buffer.from(audioBase64, 'base64');
   const saved = await storage.save({
     buffer,
-    key: `speech/tts_${Date.now()}_${randomUUID().slice(0, 8)}.mp3`
+    key: `speech/tts_${randomUUID()}.mp3`
   });
 
   return { audioUrl: saved.url, provider: 'tencent' };

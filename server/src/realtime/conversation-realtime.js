@@ -3,6 +3,8 @@ const env = require('../config/env');
 const conversationService = require('../services/conversation.service');
 const streamingAsr = require('../services/streaming-asr.service');
 const streamingTts = require('../services/streaming-tts.service');
+const store = require('../db/memory-store');
+const { getAuthenticatedUser, loadOwnedPerson } = require('../middleware/auth');
 
 function attachConversationRealtime(server) {
   const wss = new WebSocketServer({
@@ -15,13 +17,29 @@ function attachConversationRealtime(server) {
       return;
     }
 
+    let user;
+    try {
+      user = getAuthenticatedUser(request.headers.authorization || '');
+    } catch (error) {
+      socket.write(
+        `HTTP/1.1 ${error.statusCode || 401} Unauthorized\r\n` +
+          'Connection: close\r\n' +
+          'Content-Type: application/json; charset=utf-8\r\n\r\n'
+      );
+      socket.destroy();
+      return;
+    }
+
     wss.handleUpgrade(request, socket, head, (ws) => {
-      wss.emit('connection', ws, request, Object.fromEntries(parsed.searchParams.entries()));
+      wss.emit('connection', ws, request, {
+        query: Object.fromEntries(parsed.searchParams.entries()),
+        user
+      });
     });
   });
 
-  wss.on('connection', (ws, request, query) => {
-    createRealtimeConnection(ws, query).catch((error) => {
+  wss.on('connection', (ws, request, context) => {
+    createRealtimeConnection(ws, context.query, context.user).catch((error) => {
       sendJson(ws, {
         type: 'error',
         message: error.message
@@ -31,7 +49,7 @@ function attachConversationRealtime(server) {
   });
 }
 
-async function createRealtimeConnection(ws, query) {
+async function createRealtimeConnection(ws, query, user) {
   const personId = query.personId;
   const mode = query.mode || 'dialogue';
   const dialect = query.dialect || 'auto';
@@ -43,6 +61,7 @@ async function createRealtimeConnection(ws, query) {
     throw new Error('personId is required');
   }
 
+  await loadOwnedPerson(store, personId, user.userId);
   const started = await conversationService.startConversation(personId, mode);
   const conversationId = started.conversation.id;
 

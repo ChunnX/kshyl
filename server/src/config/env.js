@@ -1,6 +1,9 @@
 require('dotenv').config();
 
+const DEFAULT_JWT_SECRET = 'dev-insecure-secret-change-me';
+
 module.exports = {
+  isProduction: process.env.NODE_ENV === 'production',
   port: Number(process.env.PORT || 3000),
   uploadDir: process.env.UPLOAD_DIR || 'uploads',
   dataFile: process.env.DATA_FILE || 'data/dev-store.json',
@@ -17,7 +20,9 @@ module.exports = {
   // Auth. WECHAT_* enable real code2Session; JWT_SECRET signs sessions.
   wechatAppId: process.env.WECHAT_APPID || '',
   wechatSecret: process.env.WECHAT_SECRET || '',
-  jwtSecret: process.env.JWT_SECRET || 'dev-insecure-secret-change-me',
+  jwtSecret: process.env.JWT_SECRET || DEFAULT_JWT_SECRET,
+  hasSecureJwtSecret:
+    Boolean(process.env.JWT_SECRET) && process.env.JWT_SECRET !== DEFAULT_JWT_SECRET,
   // Dev bypass: skip JWT verification and act as the demo user. Defaults on outside
   // production so offline dev + smoke work without tokens; force with DEV_AUTH_BYPASS.
   devAuthBypass:

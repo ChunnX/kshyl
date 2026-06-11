@@ -4,6 +4,7 @@ const path = require('path');
 const WebSocket = require('ws');
 
 process.env.DATA_FILE = 'data/smoke-test-store.json';
+process.env.UPLOAD_DIR = 'data/smoke-uploads';
 process.env.STREAMING_ASR_PROVIDER = 'mock';
 process.env.STREAMING_TTS_PROVIDER = 'mock';
 process.env.DEV_AUTH_BYPASS = 'true';
@@ -120,6 +121,13 @@ async function main() {
     const bookKey = book.data.book.downloadUrl.replace(`${env.storagePublicPath}/`, '');
     const bookFilePath = path.resolve(process.cwd(), env.storageDir, bookKey);
     assert(fs.existsSync(bookFilePath), 'exported book file not found on disk');
+    const deletedBook = await request(
+      baseUrl,
+      `/api/persons/person_demo_001/books/${book.data.book.id}`,
+      { method: 'DELETE' }
+    );
+    assert(deletedBook.response.status === 200, 'book deletion failed');
+    assert(!fs.existsSync(bookFilePath), 'deleted book file should be removed from disk');
 
     const conversation = await request(baseUrl, '/api/persons/person_demo_001/conversations', {
       method: 'POST',
@@ -191,6 +199,29 @@ async function main() {
     });
     assert(contribution.response.status === 201, 'contribution submit failed');
 
+    const childAudioPath = path.resolve(process.cwd(), process.env.UPLOAD_DIR, 'child-audio.mp3');
+    fs.mkdirSync(path.dirname(childAudioPath), { recursive: true });
+    fs.writeFileSync(childAudioPath, Buffer.from([1, 2, 3, 4]));
+    const childRecording = await request(baseUrl, '/api/recordings', {
+      method: 'POST',
+      body: JSON.stringify({
+        personId: child.data.person.id,
+        audioUrl: path.relative(process.cwd(), childAudioPath)
+      })
+    });
+    assert(childRecording.response.status === 201, 'child recording creation failed');
+
+    const deletedChild = await request(baseUrl, `/api/persons/${child.data.person.id}`, {
+      method: 'DELETE'
+    });
+    assert(deletedChild.response.status === 200, 'person deletion failed');
+    assert(!fs.existsSync(childAudioPath), 'person deletion should remove recording file');
+    const deletedInvite = await request(
+      baseUrl,
+      `/api/invitations/${themeInvite.data.invitation.inviteCode}`
+    );
+    assert(deletedInvite.response.status === 404, 'person deletion should remove invitations');
+
     const storyInvite = await request(baseUrl, `/api/stories/${storyId}/invitations`, {
       method: 'POST',
       body: JSON.stringify({
@@ -219,6 +250,7 @@ async function main() {
   } finally {
     server.close();
     fs.rmSync(path.resolve(process.cwd(), env.storageDir), { recursive: true, force: true });
+    fs.rmSync(path.resolve(process.cwd(), process.env.UPLOAD_DIR), { recursive: true, force: true });
   }
 }
 

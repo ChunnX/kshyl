@@ -65,7 +65,7 @@ router.post('/:storyId/invitations', async (req, res, next) => {
     const invitation = await store.createInvitation({
       type: 'story',
       storyId: story.id,
-      themeId: req.body.themeId || story.themeId || null,
+      themeId: story.themeId || null,
       targetName: req.body.targetName,
       relation: req.body.relation,
       prompt: req.body.prompt || `请帮忙补充《${story.title}》这段记忆。`

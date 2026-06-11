@@ -103,7 +103,7 @@ async function exportBook(personId) {
   });
   const buffer = await Packer.toBuffer(doc);
 
-  const filename = `book_${personId}_${Date.now()}_${randomUUID().slice(0, 8)}.docx`;
+  const filename = `book_${randomUUID()}.docx`;
   const saved = await storage.save({ buffer, key: `exports/${filename}` });
 
   const book = await store.createBook({

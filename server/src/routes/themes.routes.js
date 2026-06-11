@@ -6,7 +6,7 @@ const router = express.Router();
 // Loads a theme and asserts the current user owns it (404 for missing or not-owned).
 async function loadOwnedTheme(themeId, userId) {
   const theme = await store.getTheme(themeId);
-  if (!theme || (theme.ownerUserId && theme.ownerUserId !== userId)) {
+  if (!theme || theme.ownerUserId !== userId) {
     const error = new Error('Theme not found');
     error.statusCode = 404;
     throw error;

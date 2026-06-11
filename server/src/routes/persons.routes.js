@@ -4,6 +4,7 @@ const bookExport = require('../services/book-export.service');
 const llm = require('../services/llm.service');
 const { loadOwnedPerson } = require('../middleware/auth');
 const { rateLimit } = require('../middleware/rate-limit');
+const storage = require('../services/storage.service');
 
 const router = express.Router();
 
@@ -165,6 +166,7 @@ router.delete('/:personId/books/:bookId', async (req, res, next) => {
       res.status(404).json({ message: 'Book not found' });
       return;
     }
+    await storage.remove(book.docxUrl || book.pdfUrl);
     await store.deleteBook(req.params.bookId);
     res.json({ deleted: true, id: req.params.bookId });
   } catch (error) {
@@ -177,6 +179,19 @@ router.delete('/:personId/books/:bookId', async (req, res, next) => {
 router.delete('/:personId', async (req, res, next) => {
   try {
     await loadOwnedPerson(store, req.params.personId, req.userId);
+    const recordings = await store.listRecordings(req.params.personId);
+    const books = await store.listBooks(req.params.personId);
+    const photos = await store.listPhotos({ personId: req.params.personId });
+    const conversations = await store.listConversations(req.params.personId);
+    const messageGroups = await Promise.all(
+      conversations.map((conversation) => store.listConversationMessages(conversation.id))
+    );
+    await storage.removeMany([
+      ...recordings.map((recording) => recording.audioUrl),
+      ...books.flatMap((book) => [book.docxUrl, book.pdfUrl]),
+      ...photos.map((photo) => photo.url),
+      ...messageGroups.flat().map((message) => message.audioUrl)
+    ]);
     await store.deletePerson(req.params.personId);
     res.json({ deleted: true, id: req.params.personId });
   } catch (error) {

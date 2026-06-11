@@ -16,6 +16,8 @@
 Authorization: Bearer <token>
 ```
 
+实时语音 WebSocket 也必须在握手请求头携带同样的 `Authorization`。生产环境不会回退到演示账号；缺少微信或 JWT 配置时登录接口会返回 503。
+
 人物相关资源做归属校验：访问非本人拥有的 `personId` 返回 404（防越权）。本地开发与烟测可设 `DEV_AUTH_BYPASS=true` 免登录（默认在非生产环境开启）。
 
 ## 人物

@@ -1,4 +1,5 @@
 const CONFIG = require('../config');
+const api = require('./api');
 const BASE_URL = CONFIG.BASE_URL;
 
 function authHeader() {
@@ -11,7 +12,7 @@ function authHeader() {
 }
 
 function uploadRecording(filePath, personId) {
-  return new Promise((resolve, reject) => {
+  return api.ensureLogin().then(() => new Promise((resolve, reject) => {
     wx.uploadFile({
       url: `${BASE_URL}/recordings/upload`,
       filePath,
@@ -30,11 +31,11 @@ function uploadRecording(filePath, personId) {
       },
       fail: reject
     });
-  });
+  }));
 }
 
 function uploadPhoto(filePath, data = {}) {
-  return new Promise((resolve, reject) => {
+  return api.ensureLogin().then(() => new Promise((resolve, reject) => {
     wx.uploadFile({
       url: `${BASE_URL}/photos/upload`,
       filePath,
@@ -51,7 +52,7 @@ function uploadPhoto(filePath, data = {}) {
       },
       fail: reject
     });
-  });
+  }));
 }
 
 module.exports = {

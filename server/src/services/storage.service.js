@@ -10,6 +10,7 @@ const path = require('path');
 const env = require('../config/env');
 
 const storageRoot = path.resolve(process.cwd(), env.storageDir);
+const uploadRoot = path.resolve(process.cwd(), env.uploadDir);
 
 /**
  * Persist a buffer under `key` (e.g. "exports/book_xxx.docx" or "speech/abc.mp3").
@@ -29,7 +30,12 @@ async function save({ buffer, key }) {
 
 async function saveToLocal({ buffer, key }) {
   const safeKey = key.replace(/^\/+/, '');
-  const filePath = path.join(storageRoot, safeKey);
+  const filePath = path.resolve(storageRoot, safeKey);
+  if (!isInside(storageRoot, filePath)) {
+    const error = new Error('Invalid storage key');
+    error.statusCode = 400;
+    throw error;
+  }
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   await fs.promises.writeFile(filePath, buffer);
   return {
@@ -47,7 +53,38 @@ async function saveToCos() {
   throw error;
 }
 
+function isInside(root, target) {
+  const relative = path.relative(root, target);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+}
+
+async function remove(reference) {
+  if (!reference || /^https?:\/\//i.test(reference)) {
+    return false;
+  }
+
+  let filePath;
+  if (reference.startsWith(`${env.storagePublicPath}/`)) {
+    filePath = path.resolve(storageRoot, reference.slice(env.storagePublicPath.length + 1));
+  } else {
+    filePath = path.resolve(process.cwd(), reference);
+  }
+
+  if (!isInside(storageRoot, filePath) && !isInside(uploadRoot, filePath)) {
+    return false;
+  }
+
+  await fs.promises.rm(filePath, { force: true });
+  return true;
+}
+
+async function removeMany(references) {
+  await Promise.all([...new Set(references.filter(Boolean))].map((reference) => remove(reference)));
+}
+
 module.exports = {
   save,
+  remove,
+  removeMany,
   storageRoot
 };

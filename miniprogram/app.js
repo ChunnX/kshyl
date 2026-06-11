@@ -19,24 +19,14 @@ App({
 
   // wx.login -> backend code2Session -> JWT stored for subsequent requests.
   login() {
-    wx.login({
-      success: (res) => {
-        if (!res.code) {
-          return;
-        }
-        api
-          .wechatLogin(res.code)
-          .then((data) => {
-            if (data && data.token) {
-              wx.setStorageSync('token', data.token);
-              this.globalData.token = data.token;
-              this.globalData.user = data.user;
-            }
-          })
-          .catch(() => {
-            // Offline/dev backend may run with auth bypass; ignore login failure.
-          });
-      }
-    });
+    api
+      .ensureLogin()
+      .then((data) => {
+        this.globalData.token = data.token || wx.getStorageSync('token') || '';
+        this.globalData.user = data.user || this.globalData.user;
+      })
+      .catch(() => {
+        // Protected requests surface a useful error if login remains unavailable.
+      });
   }
 });

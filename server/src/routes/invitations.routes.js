@@ -1,8 +1,14 @@
 const express = require('express');
 const store = require('../db/memory-store');
 const { requireAuth } = require('../middleware/auth');
+const { rateLimit } = require('../middleware/rate-limit');
 
 const router = express.Router();
+const contributionLimiter = rateLimit({
+  windowMs: 60000,
+  max: 10,
+  key: (req) => `contribution:${req.ip}:${req.params.inviteCode}`
+});
 
 // Resolves the owning user of an invitation via its theme or story → person.
 async function invitationOwnerId(invitation) {
@@ -47,16 +53,37 @@ router.get('/:inviteCode', async (req, res) => {
     }
 
     res.json({
-      invitation,
-      theme,
-      stories
+      invitation: {
+        inviteCode: invitation.inviteCode,
+        type: invitation.type,
+        targetName: invitation.targetName,
+        relation: invitation.relation,
+        prompt: invitation.prompt,
+        status: invitation.status
+      },
+      theme: theme
+        ? {
+            id: theme.id,
+            title: theme.title,
+            description: theme.description,
+            mode: theme.mode
+          }
+        : null,
+      stories: stories.map((story) => ({
+        id: story.id,
+        title: story.title,
+        polishedText: story.polishedText,
+        status: story.status,
+        topic: story.topic,
+        happenedAt: story.happenedAt
+      }))
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-router.post('/:inviteCode/contributions', async (req, res) => {
+router.post('/:inviteCode/contributions', contributionLimiter, async (req, res) => {
   try {
     const invitation = await store.getInvitationByCode(req.params.inviteCode);
     if (!invitation) {
@@ -74,7 +101,19 @@ router.post('/:inviteCode/contributions', async (req, res) => {
       return;
     }
 
-    const targetStoryId = req.body.storyId || invitation.storyId || null;
+    if (invitation.storyId && req.body.storyId && req.body.storyId !== invitation.storyId) {
+      res.status(400).json({ message: 'storyId 与邀请不匹配' });
+      return;
+    }
+
+    const targetStoryId = invitation.storyId || req.body.storyId || null;
+    if (targetStoryId) {
+      const story = await store.getStory(targetStoryId);
+      if (!story || (invitation.themeId && story.themeId !== invitation.themeId)) {
+        res.status(404).json({ message: 'Story not found' });
+        return;
+      }
+    }
 
     // Create the contribution record
     const contribution = await store.createContribution({
@@ -112,7 +151,7 @@ router.post('/:inviteCode/revoke', requireAuth, async (req, res, next) => {
     }
 
     const ownerId = await invitationOwnerId(invitation);
-    if (ownerId && ownerId !== req.userId) {
+    if (!ownerId || ownerId !== req.userId) {
       res.status(404).json({ message: 'Invitation not found' });
       return;
     }

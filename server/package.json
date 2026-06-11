@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "tunnel": "node scripts/start-tunnel.js",
     "smoke": "node scripts/smoke-test.js",
+    "test:security": "node scripts/security-test.js",
+    "test": "npm run smoke && npm run test:security",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
@@ -15,6 +17,9 @@
   },
   "prisma": {
     "seed": "node scripts/seed.js"
+  },
+  "engines": {
+    "node": ">=18 <23"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

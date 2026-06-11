@@ -46,9 +46,14 @@ function loadState() {
 
   try {
     const stored = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+    const people = (stored.people || initialState.people).map((person) => ({
+      ...person,
+      ownerUserId: person.ownerUserId || 'user_demo_001'
+    }));
     return {
       ...structuredClone(initialState),
-      ...stored
+      ...stored,
+      people
     };
   } catch (error) {
     console.warn(`Failed to read data file, using fresh state: ${error.message}`);
@@ -97,6 +102,10 @@ function createRecording(data) {
 
 function getRecording(id) {
   return state.recordings.find((recording) => recording.id === id);
+}
+
+function listRecordings(personId) {
+  return state.recordings.filter((recording) => recording.personId === personId);
 }
 
 function createTranscript(data) {
@@ -275,8 +284,16 @@ function deleteRecording(id) {
 }
 
 function deleteStory(id) {
+  const invitationIds = state.invitations
+    .filter((invitation) => invitation.storyId === id)
+    .map((invitation) => invitation.id);
   state.stories = state.stories.filter((story) => story.id !== id);
   state.storyVersions = state.storyVersions.filter((version) => version.storyId !== id);
+  state.invitations = state.invitations.filter((invitation) => invitation.storyId !== id);
+  state.contributions = state.contributions.filter(
+    (contribution) =>
+      contribution.storyId !== id && !invitationIds.includes(contribution.invitationId)
+  );
   saveState();
   return { id };
 }
@@ -293,6 +310,13 @@ function deleteBook(id) {
 
 function deletePerson(id) {
   const stories = state.stories.filter((story) => story.personId === id).map((story) => story.id);
+  const themes = state.themes.filter((theme) => theme.personId === id).map((theme) => theme.id);
+  const invitations = state.invitations
+    .filter(
+      (invitation) =>
+        themes.includes(invitation.themeId) || stories.includes(invitation.storyId)
+    )
+    .map((invitation) => invitation.id);
   state.stories = state.stories.filter((story) => story.personId !== id);
   state.storyVersions = state.storyVersions.filter((version) => !stories.includes(version.storyId));
   state.recordings = state.recordings.filter((recording) => recording.personId !== id);
@@ -301,6 +325,19 @@ function deletePerson(id) {
   state.conversations = state.conversations.filter((c) => c.personId !== id);
   state.conversationMessages = state.conversationMessages.filter((m) => !conversationIds.includes(m.conversationId));
   state.photos = state.photos.filter((photo) => photo.personId !== id);
+  state.themeCollaborators = state.themeCollaborators.filter(
+    (collaborator) => !themes.includes(collaborator.themeId)
+  );
+  state.invitations = state.invitations.filter(
+    (invitation) =>
+      !themes.includes(invitation.themeId) && !stories.includes(invitation.storyId)
+  );
+  state.contributions = state.contributions.filter(
+    (contribution) =>
+      !themes.includes(contribution.themeId) &&
+      !stories.includes(contribution.storyId) &&
+      !invitations.includes(contribution.invitationId)
+  );
   state.themes = state.themes.filter((theme) => theme.personId !== id);
   state.voiceProfiles = state.voiceProfiles.filter((profile) => profile.personId !== id);
   state.people = state.people.filter((person) => person.id !== id);
@@ -497,6 +534,7 @@ module.exports = {
   upsertUserByOpenid,
   createRecording,
   getRecording,
+  listRecordings,
   deleteRecording,
   createTranscript,
   createStory,

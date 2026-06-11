@@ -3,6 +3,7 @@ const store = require('../db/memory-store');
 const storyEditor = require('../services/story-editor.service');
 const { audioUpload } = require('../middleware/upload');
 const { loadOwnedPerson } = require('../middleware/auth');
+const storage = require('../services/storage.service');
 
 const router = express.Router();
 
@@ -22,6 +23,11 @@ router.post('/', async (req, res, next) => {
 });
 
 router.post('/upload', audioUpload.single('audio'), async (req, res, next) => {
+  if (!req.file) {
+    res.status(400).json({ message: 'audio file is required' });
+    return;
+  }
+
   try {
     await loadOwnedPerson(store, req.body.personId, req.userId);
     const recording = await store.createRecording({
@@ -31,6 +37,7 @@ router.post('/upload', audioUpload.single('audio'), async (req, res, next) => {
     });
     res.status(201).json({ recording });
   } catch (error) {
+    await storage.remove(req.file && req.file.path);
     next(error);
   }
 });
@@ -58,6 +65,7 @@ router.delete('/:recordingId', async (req, res, next) => {
       return;
     }
     await loadOwnedPerson(store, recording.personId, req.userId);
+    await storage.remove(recording.audioUrl);
     await store.deleteRecording(req.params.recordingId);
     res.json({ deleted: true, id: req.params.recordingId });
   } catch (error) {
