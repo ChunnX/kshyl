@@ -9,9 +9,11 @@ const { randomUUID } = require('crypto');
 const env = require('../config/env');
 
 const initialState = {
+  users: [],
   people: [
     {
       id: 'person_demo_001',
+      ownerUserId: 'user_demo_001',
       name: '爸爸',
       relation: 'father',
       consentStatus: 'pending',
@@ -44,9 +46,14 @@ function loadState() {
 
   try {
     const stored = JSON.parse(fs.readFileSync(dataFilePath, 'utf8'));
+    const people = (stored.people || initialState.people).map((person) => ({
+      ...person,
+      ownerUserId: person.ownerUserId || 'user_demo_001'
+    }));
     return {
       ...structuredClone(initialState),
-      ...stored
+      ...stored,
+      people
     };
   } catch (error) {
     console.warn(`Failed to read data file, using fresh state: ${error.message}`);
@@ -59,6 +66,26 @@ function saveState() {
   const tempPath = `${dataFilePath}.tmp`;
   fs.writeFileSync(tempPath, JSON.stringify(state, null, 2), 'utf8');
   fs.renameSync(tempPath, dataFilePath);
+}
+
+function getUserByOpenid(openid) {
+  return state.users.find((user) => user.openid === openid);
+}
+
+function upsertUserByOpenid(data) {
+  let user = getUserByOpenid(data.openid);
+  if (!user) {
+    user = {
+      // Keep the demo identity stable so it owns the seeded demo person.
+      id: data.openid === 'openid_demo' ? 'user_demo_001' : randomUUID(),
+      openid: data.openid,
+      role: data.role || 'family',
+      createdAt: new Date().toISOString()
+    };
+    state.users.push(user);
+    saveState();
+  }
+  return user;
 }
 
 function createRecording(data) {
@@ -75,6 +102,10 @@ function createRecording(data) {
 
 function getRecording(id) {
   return state.recordings.find((recording) => recording.id === id);
+}
+
+function listRecordings(personId) {
+  return state.recordings.filter((recording) => recording.personId === personId);
 }
 
 function createTranscript(data) {
@@ -245,6 +276,75 @@ function listConversationMessages(conversationId) {
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 }
 
+function deleteRecording(id) {
+  state.recordings = state.recordings.filter((recording) => recording.id !== id);
+  state.transcripts = state.transcripts.filter((transcript) => transcript.recordingId !== id);
+  saveState();
+  return { id };
+}
+
+function deleteStory(id) {
+  const invitationIds = state.invitations
+    .filter((invitation) => invitation.storyId === id)
+    .map((invitation) => invitation.id);
+  state.stories = state.stories.filter((story) => story.id !== id);
+  state.storyVersions = state.storyVersions.filter((version) => version.storyId !== id);
+  state.invitations = state.invitations.filter((invitation) => invitation.storyId !== id);
+  state.contributions = state.contributions.filter(
+    (contribution) =>
+      contribution.storyId !== id && !invitationIds.includes(contribution.invitationId)
+  );
+  saveState();
+  return { id };
+}
+
+function getBook(id) {
+  return state.books.find((book) => book.id === id);
+}
+
+function deleteBook(id) {
+  state.books = state.books.filter((book) => book.id !== id);
+  saveState();
+  return { id };
+}
+
+function deletePerson(id) {
+  const stories = state.stories.filter((story) => story.personId === id).map((story) => story.id);
+  const themes = state.themes.filter((theme) => theme.personId === id).map((theme) => theme.id);
+  const invitations = state.invitations
+    .filter(
+      (invitation) =>
+        themes.includes(invitation.themeId) || stories.includes(invitation.storyId)
+    )
+    .map((invitation) => invitation.id);
+  state.stories = state.stories.filter((story) => story.personId !== id);
+  state.storyVersions = state.storyVersions.filter((version) => !stories.includes(version.storyId));
+  state.recordings = state.recordings.filter((recording) => recording.personId !== id);
+  state.books = state.books.filter((book) => book.personId !== id);
+  const conversationIds = state.conversations.filter((c) => c.personId === id).map((c) => c.id);
+  state.conversations = state.conversations.filter((c) => c.personId !== id);
+  state.conversationMessages = state.conversationMessages.filter((m) => !conversationIds.includes(m.conversationId));
+  state.photos = state.photos.filter((photo) => photo.personId !== id);
+  state.themeCollaborators = state.themeCollaborators.filter(
+    (collaborator) => !themes.includes(collaborator.themeId)
+  );
+  state.invitations = state.invitations.filter(
+    (invitation) =>
+      !themes.includes(invitation.themeId) && !stories.includes(invitation.storyId)
+  );
+  state.contributions = state.contributions.filter(
+    (contribution) =>
+      !themes.includes(contribution.themeId) &&
+      !stories.includes(contribution.storyId) &&
+      !invitations.includes(contribution.invitationId)
+  );
+  state.themes = state.themes.filter((theme) => theme.personId !== id);
+  state.voiceProfiles = state.voiceProfiles.filter((profile) => profile.personId !== id);
+  state.people = state.people.filter((person) => person.id !== id);
+  saveState();
+  return { id };
+}
+
 function createPhoto(data) {
   const photo = {
     id: randomUUID(),
@@ -254,6 +354,16 @@ function createPhoto(data) {
   state.photos.push(photo);
   saveState();
   return photo;
+}
+
+function getPhoto(id) {
+  return state.photos.find((photo) => photo.id === id);
+}
+
+function deletePhoto(id) {
+  state.photos = state.photos.filter((photo) => photo.id !== id);
+  saveState();
+  return { id };
 }
 
 function listPhotos(filter = {}) {
@@ -359,6 +469,17 @@ function getInvitationByCode(inviteCode) {
   return state.invitations.find((invitation) => invitation.inviteCode === inviteCode);
 }
 
+function revokeInvitation(inviteCode) {
+  const invitation = getInvitationByCode(inviteCode);
+  if (!invitation) {
+    return null;
+  }
+  invitation.status = 'revoked';
+  invitation.updatedAt = new Date().toISOString();
+  saveState();
+  return invitation;
+}
+
 function listInvitations(filter = {}) {
   return state.invitations
     .filter((invitation) => {
@@ -409,19 +530,27 @@ function listContributions(filter = {}) {
 }
 
 module.exports = {
+  getUserByOpenid,
+  upsertUserByOpenid,
   createRecording,
   getRecording,
+  listRecordings,
+  deleteRecording,
   createTranscript,
   createStory,
   listStories,
   getStory,
   updateStory,
+  deleteStory,
   getPerson,
   createPerson,
   listPeople,
   updatePerson,
+  deletePerson,
   createBook,
   listBooks,
+  getBook,
+  deleteBook,
   createConversation,
   getConversation,
   updateConversation,
@@ -429,6 +558,8 @@ module.exports = {
   addConversationMessage,
   listConversationMessages,
   createPhoto,
+  getPhoto,
+  deletePhoto,
   listPhotos,
   createTheme,
   getTheme,
@@ -438,6 +569,7 @@ module.exports = {
   listThemeCollaborators,
   createInvitation,
   getInvitationByCode,
+  revokeInvitation,
   listInvitations,
   createContribution,
   listContributions

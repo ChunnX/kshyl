@@ -7,14 +7,28 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "tunnel": "node scripts/start-tunnel.js",
-    "smoke": "node scripts/smoke-test.js"
+    "smoke": "node scripts/smoke-test.js",
+    "test:security": "node scripts/security-test.js",
+    "test": "npm run smoke && npm run test:security",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy",
+    "prisma:migrate:dev": "prisma migrate dev",
+    "db:seed": "node scripts/seed.js"
+  },
+  "prisma": {
+    "seed": "node scripts/seed.js"
+  },
+  "engines": {
+    "node": ">=18 <23"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",
+    "docx": "^9.7.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
-    "@prisma/client": "^5.22.0",
     "prisma": "^5.22.0",
     "ws": "^8.18.0"
   },

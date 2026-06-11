@@ -2,13 +2,23 @@ const express = require('express');
 const store = require('../db/memory-store');
 const bookExport = require('../services/book-export.service');
 const llm = require('../services/llm.service');
+const { loadOwnedPerson } = require('../middleware/auth');
+const { rateLimit } = require('../middleware/rate-limit');
+const storage = require('../services/storage.service');
 
 const router = express.Router();
+
+const MEMORIAL_DISCLAIMER = '以上内容由 AI 根据已授权、已校对的故事生成，并非本人真实回复。';
+const chatLimiter = rateLimit({
+  windowMs: 60000,
+  max: 20,
+  key: (req) => `chat:${req.userId}:${req.params.personId}`
+});
 
 router.get('/', async (req, res, next) => {
   try {
     res.json({
-      people: await store.listPeople('user_demo_001')
+      people: await store.listPeople(req.userId)
     });
   } catch (error) {
     next(error);
@@ -26,7 +36,7 @@ router.post('/', async (req, res, next) => {
       name: req.body.name,
       relation: req.body.relation,
       kind: req.body.kind,
-      ownerUserId: 'user_demo_001'
+      ownerUserId: req.userId
     });
 
     res.status(201).json({ person });
@@ -37,11 +47,7 @@ router.post('/', async (req, res, next) => {
 
 router.get('/:personId', async (req, res, next) => {
   try {
-    const person = await store.getPerson(req.params.personId);
-    if (!person) {
-      res.status(404).json({ message: 'Person not found' });
-      return;
-    }
+    const person = await loadOwnedPerson(store, req.params.personId, req.userId);
     res.json({ person });
   } catch (error) {
     next(error);
@@ -58,15 +64,10 @@ router.put('/:personId/consent', async (req, res, next) => {
   }
 
   try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
     const person = await store.updatePerson(req.params.personId, {
       consentStatus: req.body.consentStatus
     });
-
-    if (!person) {
-      res.status(404).json({ message: 'Person not found' });
-      return;
-    }
-
     res.json({ person });
   } catch (error) {
     next(error);
@@ -75,6 +76,7 @@ router.put('/:personId/consent', async (req, res, next) => {
 
 router.get('/:personId/stories', async (req, res, next) => {
   try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
     res.json({
       stories: await store.listStories(req.params.personId)
     });
@@ -85,6 +87,7 @@ router.get('/:personId/stories', async (req, res, next) => {
 
 router.get('/:personId/themes', async (req, res, next) => {
   try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
     res.json({
       themes: await store.listThemes({ personId: req.params.personId })
     });
@@ -100,12 +103,13 @@ router.post('/:personId/themes', async (req, res, next) => {
   }
 
   try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
     const theme = await store.createTheme({
       personId: req.params.personId,
       title: req.body.title,
       description: req.body.description,
       mode: req.body.mode || 'solo',
-      ownerUserId: 'user_demo_001'
+      ownerUserId: req.userId
     });
 
     res.status(201).json({ theme });
@@ -116,6 +120,7 @@ router.post('/:personId/themes', async (req, res, next) => {
 
 router.post('/:personId/book/export', async (req, res, next) => {
   try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
     const book = await bookExport.exportBook(req.params.personId);
     res.json({ book });
   } catch (error) {
@@ -125,6 +130,7 @@ router.post('/:personId/book/export', async (req, res, next) => {
 
 router.get('/:personId/books', async (req, res, next) => {
   try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
     res.json({
       books: await store.listBooks(req.params.personId)
     });
@@ -133,13 +139,9 @@ router.get('/:personId/books', async (req, res, next) => {
   }
 });
 
-router.post('/:personId/chat', async (req, res, next) => {
+router.post('/:personId/chat', chatLimiter, async (req, res, next) => {
   try {
-    const person = await store.getPerson(req.params.personId);
-    if (!person) {
-      res.status(404).json({ message: 'Person not found' });
-      return;
-    }
+    const person = await loadOwnedPerson(store, req.params.personId, req.userId);
 
     if (person.consentStatus !== 'granted') {
       res.status(403).json({
@@ -150,7 +152,48 @@ router.post('/:personId/chat', async (req, res, next) => {
 
     const stories = (await store.listStories(req.params.personId)).filter((story) => story.status === 'approved');
     const reply = await llm.chatWithMemory(req.body.message || '', stories);
-    res.json({ reply });
+    res.json({ reply, disclaimer: MEMORIAL_DISCLAIMER });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/:personId/books/:bookId', async (req, res, next) => {
+  try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
+    const book = await store.getBook(req.params.bookId);
+    if (!book || book.personId !== req.params.personId) {
+      res.status(404).json({ message: 'Book not found' });
+      return;
+    }
+    await storage.remove(book.docxUrl || book.pdfUrl);
+    await store.deleteBook(req.params.bookId);
+    res.json({ deleted: true, id: req.params.bookId });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Deletes a person and ALL their data (recordings, stories, books, conversations,
+// photos, themes, voice profiles). The user's "delete everything" privacy control.
+router.delete('/:personId', async (req, res, next) => {
+  try {
+    await loadOwnedPerson(store, req.params.personId, req.userId);
+    const recordings = await store.listRecordings(req.params.personId);
+    const books = await store.listBooks(req.params.personId);
+    const photos = await store.listPhotos({ personId: req.params.personId });
+    const conversations = await store.listConversations(req.params.personId);
+    const messageGroups = await Promise.all(
+      conversations.map((conversation) => store.listConversationMessages(conversation.id))
+    );
+    await storage.removeMany([
+      ...recordings.map((recording) => recording.audioUrl),
+      ...books.flatMap((book) => [book.docxUrl, book.pdfUrl]),
+      ...photos.map((photo) => photo.url),
+      ...messageGroups.flat().map((message) => message.audioUrl)
+    ]);
+    await store.deletePerson(req.params.personId);
+    res.json({ deleted: true, id: req.params.personId });
   } catch (error) {
     next(error);
   }

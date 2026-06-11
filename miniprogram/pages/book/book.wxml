@@ -8,10 +8,21 @@
   <view class="panel">
     <view class="section-title">当前书稿</view>
     <view class="book-result">{{result}}</view>
+
+    <view class="book-outline" wx:if="{{outline.length}}">
+      <view class="outline-item" wx:for="{{outline}}" wx:key="chapter">
+        <text class="outline-chapter">第{{item.chapter}}章</text>
+        <text class="outline-title">{{item.title}}</text>
+      </view>
+    </view>
   </view>
 
-  <button class="primary-button action" bindtap="exportBook">
+  <button class="primary-button action" bindtap="exportBook" loading="{{generating}}" disabled="{{generating}}">
     <image class="button-icon" src="/assets/icons/book-white.svg" mode="aspectFit" />
-    生成书稿
+    {{generating ? '正在生成...' : '生成书稿'}}
+  </button>
+
+  <button class="primary-button action" bindtap="downloadBook" wx:if="{{downloadUrl}}">
+    下载 Word 文档
   </button>
 </view>

@@ -4,11 +4,21 @@
 
 `GET /health`
 
-## 登录
+## 登录与鉴权
 
 `POST /api/auth/wechat-login`
 
-开发阶段返回 mock 用户和 token。生产版本使用微信 `code2Session` 换取 `openid`。
+入参 `{ code }`（小程序 `wx.login` 获取）。配置 `WECHAT_APPID`/`WECHAT_SECRET` 后走微信 `code2Session` 换 `openid`；未配置时回退为演示用户。返回 `{ user, token }`，`token` 为 JWT。
+
+除登录和邀请分享链接（`/api/invitations/*`）外，所有 `/api/*` 接口都需要在请求头携带：
+
+```txt
+Authorization: Bearer <token>
+```
+
+实时语音 WebSocket 也必须在握手请求头携带同样的 `Authorization`。生产环境不会回退到演示账号；缺少微信或 JWT 配置时登录接口会返回 503。
+
+人物相关资源做归属校验：访问非本人拥有的 `personId` 返回 404（防越权）。本地开发与烟测可设 `DEV_AUTH_BYPASS=true` 免登录（默认在非生产环境开启）。
 
 ## 人物
 
@@ -228,7 +238,7 @@
 
 `POST /api/invitations/:inviteCode/contributions`
 
-提交补充。
+提交补充。链接被撤销后返回 410。
 
 ```json
 {
@@ -236,3 +246,27 @@
   "text": "那天他背着蓝色书包，进门前还回头看了一眼。"
 }
 ```
+
+`POST /api/invitations/:inviteCode/revoke`
+
+撤销分享链接（需登录且为资源拥有者）。撤销后该链接的读取与补充都会返回 410。
+
+## 删除（隐私）
+
+用户可删除自己的数据，删除即不可恢复：
+
+- `DELETE /api/recordings/:recordingId`
+- `DELETE /api/stories/:storyId`
+- `DELETE /api/photos/:photoId`
+- `DELETE /api/persons/:personId/books/:bookId`
+- `DELETE /api/persons/:personId` —— 级联删除该人物的全部数据（录音、故事、书稿、会话、照片、主题、声音模型）。
+
+## 成书导出
+
+`POST /api/persons/:personId/book/export`
+
+按已校对（`approved`）故事生成 Word 文档，返回 `{ book }`，其中 `downloadUrl` 指向可下载文件（本地存储经 `/files` 暴露）。
+
+## 纪念对话免责
+
+`POST /api/persons/:personId/chat` 的响应除 `reply` 外还包含 `disclaimer` 字段，小程序需展示「这是 AI 生成，非本人」提示。该接口有每分钟限流。

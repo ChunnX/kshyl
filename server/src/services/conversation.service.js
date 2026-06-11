@@ -53,7 +53,7 @@ async function addTurn(conversationId, payload) {
   }
 
   const personId = conversation.personId;
-  const text = await resolveUserText(payload);
+  const text = await resolveUserText({ ...payload, personId });
   const photos = await store.listPhotos({ conversationId });
 
   const userMessage = await store.addConversationMessage({
@@ -123,7 +123,7 @@ async function resolveUserText(payload) {
   }
 
   const recording = await store.getRecording(payload.recordingId);
-  if (!recording) {
+  if (!recording || recording.personId !== payload.personId) {
     const error = new Error('Recording not found');
     error.statusCode = 404;
     throw error;

@@ -1,12 +1,23 @@
 const CONFIG = require('../config');
+const api = require('./api');
 const BASE_URL = CONFIG.BASE_URL;
 
+function authHeader() {
+  try {
+    const token = wx.getStorageSync('token');
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch (error) {
+    return {};
+  }
+}
+
 function uploadRecording(filePath, personId) {
-  return new Promise((resolve, reject) => {
+  return api.ensureLogin().then(() => new Promise((resolve, reject) => {
     wx.uploadFile({
       url: `${BASE_URL}/recordings/upload`,
       filePath,
       name: 'audio',
+      header: authHeader(),
       formData: {
         personId
       },
@@ -20,15 +31,16 @@ function uploadRecording(filePath, personId) {
       },
       fail: reject
     });
-  });
+  }));
 }
 
 function uploadPhoto(filePath, data = {}) {
-  return new Promise((resolve, reject) => {
+  return api.ensureLogin().then(() => new Promise((resolve, reject) => {
     wx.uploadFile({
       url: `${BASE_URL}/photos/upload`,
       filePath,
       name: 'photo',
+      header: authHeader(),
       formData: data,
       success(res) {
         try {
@@ -40,7 +52,7 @@ function uploadPhoto(filePath, data = {}) {
       },
       fail: reject
     });
-  });
+  }));
 }
 
 module.exports = {

@@ -20,6 +20,26 @@ async function ensureDemoPerson() {
   });
 }
 
+// --- User ---
+async function getUserByOpenid(openid) {
+  return prisma.user.findUnique({ where: { openid } });
+}
+
+async function upsertUserByOpenid(data) {
+  const existing = await prisma.user.findUnique({ where: { openid: data.openid } });
+  if (existing) {
+    return existing;
+  }
+  return prisma.user.create({
+    data: {
+      // Keep the demo identity stable so it owns the seeded demo person.
+      id: data.openid === 'openid_demo' ? 'user_demo_001' : undefined,
+      openid: data.openid,
+      role: data.role || 'family'
+    }
+  });
+}
+
 // --- Recording ---
 async function createRecording(data) {
   return prisma.recording.create({
@@ -35,6 +55,10 @@ async function createRecording(data) {
 
 async function getRecording(id) {
   return prisma.recording.findUnique({ where: { id } });
+}
+
+async function listRecordings(personId) {
+  return prisma.recording.findMany({ where: { personId } });
 }
 
 // --- Transcript ---
@@ -403,9 +427,135 @@ async function listContributions(filter = {}) {
   return prisma.contribution.findMany({ where });
 }
 
+// --- Deletes (privacy) ---
+async function deleteRecording(id) {
+  await prisma.$transaction([
+    prisma.transcript.deleteMany({ where: { recordingId: id } }),
+    prisma.recording.delete({ where: { id } })
+  ]);
+  return { id };
+}
+
+async function deleteStory(id) {
+  const invitations = await prisma.invitation.findMany({
+    where: { storyId: id },
+    select: { id: true }
+  });
+  const invitationIds = invitations.map((invitation) => invitation.id);
+  await prisma.$transaction([
+    prisma.contribution.deleteMany({
+      where: {
+        OR: [
+          { storyId: id },
+          { invitationId: { in: invitationIds } }
+        ]
+      }
+    }),
+    prisma.invitation.deleteMany({ where: { storyId: id } }),
+    prisma.storyVersion.deleteMany({ where: { storyId: id } }),
+    prisma.story.delete({ where: { id } })
+  ]);
+  return { id };
+}
+
+async function getBook(id) {
+  return prisma.book.findUnique({ where: { id } });
+}
+
+async function deleteBook(id) {
+  await prisma.book.delete({ where: { id } });
+  return { id };
+}
+
+async function getPhoto(id) {
+  return prisma.photo.findUnique({ where: { id } });
+}
+
+async function deletePhoto(id) {
+  await prisma.photo.delete({ where: { id } });
+  return { id };
+}
+
+async function deletePerson(id) {
+  const recordings = await prisma.recording.findMany({ where: { personId: id }, select: { id: true } });
+  const recordingIds = recordings.map((r) => r.id);
+  const stories = await prisma.story.findMany({ where: { personId: id }, select: { id: true } });
+  const storyIds = stories.map((s) => s.id);
+  const conversations = await prisma.conversation.findMany({ where: { personId: id }, select: { id: true } });
+  const conversationIds = conversations.map((c) => c.id);
+  const themes = await prisma.theme.findMany({ where: { personId: id }, select: { id: true } });
+  const themeIds = themes.map((theme) => theme.id);
+  const invitations = await prisma.invitation.findMany({
+    where: {
+      OR: [
+        { themeId: { in: themeIds } },
+        { storyId: { in: storyIds } }
+      ]
+    },
+    select: { id: true }
+  });
+  const invitationIds = invitations.map((invitation) => invitation.id);
+
+  await prisma.$transaction([
+    prisma.transcript.deleteMany({ where: { recordingId: { in: recordingIds } } }),
+    prisma.storyVersion.deleteMany({ where: { storyId: { in: storyIds } } }),
+    prisma.memoryEmbedding.deleteMany({ where: { personId: id } }),
+    prisma.contribution.deleteMany({
+      where: {
+        OR: [
+          { themeId: { in: themeIds } },
+          { storyId: { in: storyIds } },
+          { invitationId: { in: invitationIds } }
+        ]
+      }
+    }),
+    prisma.invitation.deleteMany({
+      where: {
+        OR: [
+          { themeId: { in: themeIds } },
+          { storyId: { in: storyIds } }
+        ]
+      }
+    }),
+    prisma.themeCollaborator.deleteMany({ where: { themeId: { in: themeIds } } }),
+    prisma.story.deleteMany({ where: { personId: id } }),
+    prisma.recording.deleteMany({ where: { personId: id } }),
+    prisma.book.deleteMany({ where: { personId: id } }),
+    prisma.conversationMessage.deleteMany({ where: { conversationId: { in: conversationIds } } }),
+    prisma.conversation.deleteMany({ where: { personId: id } }),
+    prisma.photo.deleteMany({ where: { personId: id } }),
+    prisma.theme.deleteMany({ where: { personId: id } }),
+    prisma.voiceProfile.deleteMany({ where: { personId: id } }),
+    prisma.person.delete({ where: { id } })
+  ]);
+  return { id };
+}
+
+async function revokeInvitation(inviteCode) {
+  try {
+    return await prisma.invitation.update({
+      where: { inviteCode },
+      data: { status: 'revoked' }
+    });
+  } catch (error) {
+    return null;
+  }
+}
+
 module.exports = {
+  getUserByOpenid,
+  upsertUserByOpenid,
   createRecording,
   getRecording,
+  listRecordings,
+  deleteRecording,
+  deleteStory,
+  getBook,
+  deleteBook,
+  getPhoto,
+  deletePhoto,
+  deletePerson,
+  revokeInvitation,
   createTranscript,
   createStory,
   listStories,

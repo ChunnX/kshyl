@@ -3,10 +3,21 @@ const store = require('../db/memory-store');
 
 const router = express.Router();
 
+// Loads a theme and asserts the current user owns it (404 for missing or not-owned).
+async function loadOwnedTheme(themeId, userId) {
+  const theme = await store.getTheme(themeId);
+  if (!theme || theme.ownerUserId !== userId) {
+    const error = new Error('Theme not found');
+    error.statusCode = 404;
+    throw error;
+  }
+  return theme;
+}
+
 router.get('/', async (req, res, next) => {
   try {
     res.json({
-      themes: await store.listThemes({})
+      themes: await store.listThemes({ ownerUserId: req.userId })
     });
   } catch (error) {
     next(error);
@@ -24,7 +35,7 @@ router.post('/', async (req, res, next) => {
       title: req.body.title,
       description: req.body.description,
       mode: req.body.mode || 'solo',
-      ownerUserId: 'user_demo_001'
+      ownerUserId: req.userId
     });
 
     res.status(201).json({ theme });
@@ -35,11 +46,7 @@ router.post('/', async (req, res, next) => {
 
 router.get('/:themeId', async (req, res, next) => {
   try {
-    const theme = await store.getTheme(req.params.themeId);
-    if (!theme) {
-      res.status(404).json({ message: 'Theme not found' });
-      return;
-    }
+    const theme = await loadOwnedTheme(req.params.themeId, req.userId);
 
     res.json({
       theme,
@@ -54,17 +61,13 @@ router.get('/:themeId', async (req, res, next) => {
 
 router.put('/:themeId', async (req, res, next) => {
   try {
+    await loadOwnedTheme(req.params.themeId, req.userId);
     const theme = await store.updateTheme(req.params.themeId, {
       title: req.body.title,
       description: req.body.description,
       mode: req.body.mode,
       status: req.body.status
     });
-
-    if (!theme) {
-      res.status(404).json({ message: 'Theme not found' });
-      return;
-    }
 
     res.json({ theme });
   } catch (error) {
@@ -74,11 +77,7 @@ router.put('/:themeId', async (req, res, next) => {
 
 router.post('/:themeId/collaborators', async (req, res, next) => {
   try {
-    const theme = await store.getTheme(req.params.themeId);
-    if (!theme) {
-      res.status(404).json({ message: 'Theme not found' });
-      return;
-    }
+    const theme = await loadOwnedTheme(req.params.themeId, req.userId);
 
     if (!req.body.name) {
       res.status(400).json({ message: 'name is required' });
@@ -100,11 +99,7 @@ router.post('/:themeId/collaborators', async (req, res, next) => {
 
 router.post('/:themeId/invitations', async (req, res, next) => {
   try {
-    const theme = await store.getTheme(req.params.themeId);
-    if (!theme) {
-      res.status(404).json({ message: 'Theme not found' });
-      return;
-    }
+    const theme = await loadOwnedTheme(req.params.themeId, req.userId);
 
     if (!req.body.targetName) {
       res.status(400).json({ message: 'targetName is required' });
