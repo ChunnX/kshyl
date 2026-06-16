@@ -63,13 +63,30 @@ TENCENT_ASR_DIALECT=auto
 
 ## 小程序切到云端
 
-部署完成后，拿到 CloudBase 默认域名，更新 `miniprogram/config.js`：
+部署完成后，给 CloudBase 云托管绑定一个已备案的自有子域名，例如：
+
+```txt
+api.zzzp.me
+```
+
+不要使用 `www.zzzp.me`：这个域名已经给 PPT 网站使用，DNS 解析和站点配置都不要改。只新增 `api.zzzp.me` 这一条解析/绑定，不会影响现有 PPT 网站。
+
+更新 `miniprogram/config.js`：
 
 ```js
 const MODE = 'cloud';
 const CLOUD_ENV_ID = '你的环境 ID';
 const CLOUD_SERVICE_NAME = '你的服务名';
 const CLOUD_REGION = 'ap-shanghai';
+const CLOUD_HOST = 'api.zzzp.me';
 ```
 
-如果默认域名不是代码里拼出来的格式，直接把 `cloud` 分支里的 `host` 改成部署完成后控制台显示的域名即可。小程序必须使用 `https://` 和 `wss://`，并在微信公众平台配置 request / socket 合法域名。
+然后在微信公众平台配置服务器域名：
+
+```txt
+request 合法域名: https://api.zzzp.me
+socket 合法域名: wss://api.zzzp.me
+uploadFile 合法域名: https://api.zzzp.me
+```
+
+小程序必须使用 `https://` 和 `wss://`，并在微信公众平台配置 request / socket / uploadFile 合法域名。
