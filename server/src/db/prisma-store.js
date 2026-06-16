@@ -2,6 +2,16 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const { randomUUID } = require('crypto');
 
+function withProfileCompleted(user) {
+  if (!user) {
+    return null;
+  }
+  return {
+    ...user,
+    profileCompleted: Boolean(user.username && user.termsAcceptedAt && user.privacyAcceptedAt)
+  };
+}
+
 async function ensureDemoPerson() {
   const existing = await prisma.person.findUnique({ where: { id: 'person_demo_001' } });
   if (existing) {
@@ -22,22 +32,50 @@ async function ensureDemoPerson() {
 
 // --- User ---
 async function getUserByOpenid(openid) {
-  return prisma.user.findUnique({ where: { openid } });
+  return withProfileCompleted(await prisma.user.findUnique({ where: { openid } }));
+}
+
+async function getUserById(id) {
+  return withProfileCompleted(await prisma.user.findUnique({ where: { id } }));
 }
 
 async function upsertUserByOpenid(data) {
   const existing = await prisma.user.findUnique({ where: { openid: data.openid } });
+  const payload = {
+    username: data.username !== undefined ? data.username : existing && existing.username,
+    role: data.role || (existing && existing.role) || 'family',
+    termsVersion:
+      data.termsVersion !== undefined ? data.termsVersion : existing && existing.termsVersion,
+    privacyVersion:
+      data.privacyVersion !== undefined ? data.privacyVersion : existing && existing.privacyVersion,
+    termsAcceptedAt:
+      data.termsAcceptedAt !== undefined ? data.termsAcceptedAt : existing && existing.termsAcceptedAt,
+    privacyAcceptedAt:
+      data.privacyAcceptedAt !== undefined
+        ? data.privacyAcceptedAt
+        : existing && existing.privacyAcceptedAt,
+    registeredAt:
+      data.registeredAt !== undefined ? data.registeredAt : existing && existing.registeredAt
+  };
+
   if (existing) {
-    return existing;
+    return withProfileCompleted(
+      await prisma.user.update({
+        where: { openid: data.openid },
+        data: payload
+      })
+    );
   }
-  return prisma.user.create({
-    data: {
-      // Keep the demo identity stable so it owns the seeded demo person.
-      id: data.openid === 'openid_demo' ? 'user_demo_001' : undefined,
-      openid: data.openid,
-      role: data.role || 'family'
-    }
-  });
+  return withProfileCompleted(
+    await prisma.user.create({
+      data: {
+        // Keep the demo identity stable so it owns the seeded demo person.
+        id: data.openid === 'openid_demo' ? 'user_demo_001' : undefined,
+        openid: data.openid,
+        ...payload
+      }
+    })
+  );
 }
 
 // --- Recording ---
@@ -401,6 +439,7 @@ async function createContribution(data) {
       invitationId: data.invitationId,
       themeId: data.themeId || null,
       storyId: data.storyId || null,
+      contributorUserId: data.contributorUserId || null,
       contributorName: data.contributorName,
       text: data.text,
       status: 'submitted'
@@ -544,6 +583,7 @@ async function revokeInvitation(inviteCode) {
 
 module.exports = {
   getUserByOpenid,
+  getUserById,
   upsertUserByOpenid,
   createRecording,
   getRecording,

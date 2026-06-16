@@ -68,24 +68,59 @@ function saveState() {
   fs.renameSync(tempPath, dataFilePath);
 }
 
+function normalizeUser(user) {
+  return {
+    ...user,
+    profileCompleted: Boolean(user.username && user.termsAcceptedAt && user.privacyAcceptedAt)
+  };
+}
+
 function getUserByOpenid(openid) {
-  return state.users.find((user) => user.openid === openid);
+  const user = state.users.find((item) => item.openid === openid);
+  return user ? normalizeUser(user) : null;
+}
+
+function getUserById(id) {
+  const user = state.users.find((item) => item.id === id);
+  return user ? normalizeUser(user) : null;
 }
 
 function upsertUserByOpenid(data) {
-  let user = getUserByOpenid(data.openid);
+  let user = state.users.find((item) => item.openid === data.openid);
+  const now = new Date().toISOString();
   if (!user) {
     user = {
       // Keep the demo identity stable so it owns the seeded demo person.
       id: data.openid === 'openid_demo' ? 'user_demo_001' : randomUUID(),
       openid: data.openid,
+      username: data.username || '',
       role: data.role || 'family',
-      createdAt: new Date().toISOString()
+      termsVersion: data.termsVersion || '',
+      privacyVersion: data.privacyVersion || '',
+      termsAcceptedAt: data.termsAcceptedAt || null,
+      privacyAcceptedAt: data.privacyAcceptedAt || null,
+      registeredAt: data.registeredAt || null,
+      createdAt: now,
+      updatedAt: now
     };
     state.users.push(user);
     saveState();
+    return normalizeUser(user);
   }
-  return user;
+
+  Object.assign(user, {
+    username: data.username !== undefined ? data.username : user.username,
+    role: data.role || user.role || 'family',
+    termsVersion: data.termsVersion !== undefined ? data.termsVersion : user.termsVersion,
+    privacyVersion: data.privacyVersion !== undefined ? data.privacyVersion : user.privacyVersion,
+    termsAcceptedAt: data.termsAcceptedAt !== undefined ? data.termsAcceptedAt : user.termsAcceptedAt,
+    privacyAcceptedAt:
+      data.privacyAcceptedAt !== undefined ? data.privacyAcceptedAt : user.privacyAcceptedAt,
+    registeredAt: data.registeredAt !== undefined ? data.registeredAt : user.registeredAt,
+    updatedAt: now
+  });
+  saveState();
+  return normalizeUser(user);
 }
 
 function createRecording(data) {
@@ -500,6 +535,7 @@ function createContribution(data) {
     invitationId: data.invitationId,
     themeId: data.themeId || null,
     storyId: data.storyId || null,
+    contributorUserId: data.contributorUserId || null,
     contributorName: data.contributorName,
     text: data.text,
     status: 'submitted',
@@ -531,6 +567,7 @@ function listContributions(filter = {}) {
 
 module.exports = {
   getUserByOpenid,
+  getUserById,
   upsertUserByOpenid,
   createRecording,
   getRecording,
