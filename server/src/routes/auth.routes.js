@@ -5,6 +5,43 @@ const env = require('../config/env');
 const store = require('../db/memory-store');
 
 const router = express.Router();
+const CURRENT_TERMS_VERSION = '2026-06-16';
+const CURRENT_PRIVACY_VERSION = '2026-06-16';
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    openid: user.openid,
+    username: user.username || '',
+    role: user.role,
+    profileCompleted: Boolean(user.username && user.termsAcceptedAt && user.privacyAcceptedAt),
+    termsVersion: user.termsVersion || '',
+    privacyVersion: user.privacyVersion || ''
+  };
+}
+
+function validateUsername(username) {
+  const normalized = String(username || '').trim();
+  if (normalized.length < 2 || normalized.length > 20) {
+    const error = new Error('用户名需为 2-20 个字符');
+    error.statusCode = 400;
+    throw error;
+  }
+  return normalized;
+}
+
+function assertAcceptedVersions(body) {
+  if (body.acceptedTermsVersion !== CURRENT_TERMS_VERSION) {
+    const error = new Error('请先阅读并同意当前版本用户协议');
+    error.statusCode = 400;
+    throw error;
+  }
+  if (body.acceptedPrivacyVersion !== CURRENT_PRIVACY_VERSION) {
+    const error = new Error('请先阅读并同意当前版本隐私政策');
+    error.statusCode = 400;
+    throw error;
+  }
+}
 
 function signToken(user) {
   if (!env.devAuthBypass && !env.hasSecureJwtSecret) {
@@ -44,36 +81,103 @@ function code2Session(code) {
   });
 }
 
-router.post('/wechat-login', async (req, res, next) => {
-  try {
-    let openid;
+async function resolveOpenidFromCode(code) {
+  if (env.wechatAppId && env.wechatSecret) {
+    if (!code) {
+      const error = new Error('微信登录 code 不能为空');
+      error.statusCode = 400;
+      throw error;
+    }
+    const session = await code2Session(code);
+    if (session.errcode) {
+      const error = new Error(`微信登录失败：${session.errmsg}`);
+      error.statusCode = 400;
+      throw error;
+    }
+    if (!session.openid) {
+      const error = new Error('微信登录响应缺少 openid');
+      error.statusCode = 502;
+      throw error;
+    }
+    return session.openid;
+  }
 
-    if (env.wechatAppId && env.wechatSecret) {
-      if (!req.body.code) {
-        res.status(400).json({ message: '微信登录 code 不能为空' });
-        return;
-      }
-      const session = await code2Session(req.body.code);
-      if (session.errcode) {
-        res.status(400).json({ message: `微信登录失败：${session.errmsg}` });
-        return;
-      }
-      if (!session.openid) {
-        res.status(502).json({ message: '微信登录响应缺少 openid' });
-        return;
-      }
-      openid = session.openid;
-    } else if (env.devAuthBypass) {
-      // Dev/offline: deterministic demo identity (owns the seeded demo person).
-      openid = 'openid_demo';
-    } else {
-      res.status(503).json({ message: '服务端未配置 WECHAT_APPID/WECHAT_SECRET' });
+  if (env.devAuthBypass) {
+    // Dev/offline: deterministic demo identity (owns the seeded demo person).
+    return 'openid_demo';
+  }
+
+  const error = new Error('服务端未配置 WECHAT_APPID/WECHAT_SECRET');
+  error.statusCode = 503;
+  throw error;
+}
+
+router.post('/register', async (req, res, next) => {
+  try {
+    const username = validateUsername(req.body.username);
+    assertAcceptedVersions(req.body);
+
+    const openid = await resolveOpenidFromCode(req.body.code);
+    const now = new Date();
+    const user = await store.upsertUserByOpenid({
+      openid,
+      username,
+      role: 'family',
+      termsVersion: CURRENT_TERMS_VERSION,
+      privacyVersion: CURRENT_PRIVACY_VERSION,
+      termsAcceptedAt: now,
+      privacyAcceptedAt: now,
+      registeredAt: now
+    });
+
+    res.json({
+      user: publicUser(user),
+      token: signToken(user)
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/me', async (req, res, next) => {
+  try {
+    const header = req.headers.authorization || '';
+    const token = header.startsWith('Bearer ') ? header.slice(7) : '';
+    if (!token) {
+      res.status(401).json({ message: '未登录' });
       return;
     }
 
-    const user = await store.upsertUserByOpenid({ openid, role: 'family' });
+    const payload = jwt.verify(token, env.jwtSecret);
+    const user = await store.getUserById(payload.userId);
+    if (!user) {
+      res.status(401).json({ message: '登录已过期，请重新登录' });
+      return;
+    }
+
+    res.json({ user: publicUser(user) });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/wechat-login', async (req, res, next) => {
+  try {
+    const openid = await resolveOpenidFromCode(req.body.code);
+    let user = await store.getUserByOpenid(openid);
+    if (!user) {
+      user = await store.upsertUserByOpenid({ openid, role: 'family' });
+    }
+    if (!user.profileCompleted) {
+      res.status(409).json({
+        message: '请先完成注册',
+        needsRegistration: true
+      });
+      return;
+    }
+
     res.json({
-      user: { id: user.id, openid: user.openid, role: user.role },
+      user: publicUser(user),
       token: signToken(user)
     });
   } catch (error) {
