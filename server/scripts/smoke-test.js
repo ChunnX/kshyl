@@ -38,6 +38,27 @@ async function request(baseUrl, pathName, options = {}) {
   return { response, data };
 }
 
+async function register(baseUrl, username, suffix = 'demo') {
+  const result = await request(baseUrl, '/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      code: `smoke-code-${suffix}`,
+      username,
+      acceptedTermsVersion: '2026-06-16',
+      acceptedPrivacyVersion: '2026-06-16'
+    })
+  });
+  assert(result.response.status === 200, `registration failed for ${username}`);
+  assert(result.data.token, 'registration token missing');
+  assert(result.data.user.username === username, 'registered username mismatch');
+  assert(result.data.user.profileCompleted === true, 'registered user should be complete');
+  return result.data;
+}
+
+function authHeaders(token) {
+  return { Authorization: `Bearer ${token}` };
+}
+
 function assert(condition, message) {
   if (!condition) {
     throw new Error(message);
@@ -51,8 +72,18 @@ async function main() {
   const { server, baseUrl } = await listen();
 
   try {
+    const registered = await register(baseUrl, '测试用户', 'owner');
+    const auth = authHeaders(registered.token);
+
     const health = await request(baseUrl, '/health');
     assert(health.data.ok === true, 'health check failed');
+
+    const me = await request(baseUrl, '/api/auth/me', {
+      headers: auth
+    });
+    assert(me.response.status === 200, 'me endpoint should work after registration');
+    assert(me.data.user.username === '测试用户', 'me endpoint username mismatch');
+
     await request(baseUrl, '/api/persons/person_demo_001');
     await request(baseUrl, '/api/persons/person_demo_001/consent', {
       method: 'PUT',
@@ -192,12 +223,18 @@ async function main() {
 
     const contribution = await request(baseUrl, `/api/invitations/${themeInvite.data.invitation.inviteCode}/contributions`, {
       method: 'POST',
+      headers: auth,
       body: JSON.stringify({
+        storyId: null,
         contributorName: '妈妈',
         text: '那天他背着蓝色书包，进门前还回头看了一眼。'
       })
     });
     assert(contribution.response.status === 201, 'contribution submit failed');
+    assert(
+      contribution.data.contribution.contributorUserId === registered.user.id,
+      'contribution user id mismatch'
+    );
 
     const childAudioPath = path.resolve(process.cwd(), process.env.UPLOAD_DIR, 'child-audio.mp3');
     fs.mkdirSync(path.dirname(childAudioPath), { recursive: true });

@@ -119,6 +119,29 @@ async function main() {
     });
     assert(unconfiguredLogin.response.status === 503, 'production login must not fall back to demo user');
 
+    const unconfiguredRegister = await request(baseUrl, '/api/auth/register', null, {
+      method: 'POST',
+      body: JSON.stringify({
+        code: 'test-code',
+        username: '安全测试',
+        acceptedTermsVersion: '2026-06-16',
+        acceptedPrivacyVersion: '2026-06-16'
+      })
+    });
+    assert(
+      unconfiguredRegister.response.status === 503,
+      'production register must not fall back to demo user when WeChat secrets are missing'
+    );
+
+    const anonymousContribution = await request(baseUrl, '/api/invitations/missing/contributions', null, {
+      method: 'POST',
+      body: JSON.stringify({
+        contributorName: '安全测试',
+        text: 'anonymous contribution should be rejected'
+      })
+    });
+    assert(anonymousContribution.response.status === 401, 'anonymous contribution should be 401');
+
     const owned = await request(baseUrl, '/api/persons/person_demo_001', demoToken);
     assert(owned.response.status === 200, 'owner should access person');
 
