@@ -83,7 +83,7 @@ router.get('/:inviteCode', async (req, res) => {
   }
 });
 
-router.post('/:inviteCode/contributions', contributionLimiter, async (req, res) => {
+router.post('/:inviteCode/contributions', requireAuth, contributionLimiter, async (req, res) => {
   try {
     const invitation = await store.getInvitationByCode(req.params.inviteCode);
     if (!invitation) {
@@ -115,12 +115,26 @@ router.post('/:inviteCode/contributions', contributionLimiter, async (req, res) 
       }
     }
 
+    const currentUser = await store.getUserById(req.userId);
+    if (!currentUser || !currentUser.profileCompleted) {
+      res.status(403).json({ message: '请先完成注册后再提交共创内容' });
+      return;
+    }
+    const contributorName = String(
+      req.body.contributorName || currentUser.username || invitation.targetName || ''
+    ).trim();
+    if (!contributorName) {
+      res.status(400).json({ message: '贡献者名称不能为空' });
+      return;
+    }
+
     // Create the contribution record
     const contribution = await store.createContribution({
       invitationId: invitation.id,
       themeId: invitation.themeId,
       storyId: targetStoryId,
-      contributorName: req.body.contributorName || invitation.targetName,
+      contributorUserId: req.userId,
+      contributorName,
       text: req.body.text
     });
 
@@ -128,7 +142,7 @@ router.post('/:inviteCode/contributions', contributionLimiter, async (req, res) 
     if (invitation.themeId) {
       await store.addThemeCollaborator({
         themeId: invitation.themeId,
-        name: req.body.contributorName || invitation.targetName,
+        name: contributorName,
         relation: invitation.relation || '共创人',
         role: 'contributor',
         status: 'accepted'
