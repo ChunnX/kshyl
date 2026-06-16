@@ -28,11 +28,11 @@ function listen() {
 
 async function request(baseUrl, pathName, options = {}) {
   const response = await fetch(`${baseUrl}${pathName}`, {
+    ...options,
     headers: {
       'content-type': 'application/json',
       ...(options.headers || {})
-    },
-    ...options
+    }
   });
   const data = await response.json();
   return { response, data };
