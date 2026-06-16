@@ -1,4 +1,5 @@
 const CONFIG = require('../config');
+const LEGAL = require('../utils/legal-content');
 const BASE_URL = CONFIG.BASE_URL;
 let loginPromise = null;
 
@@ -64,6 +65,9 @@ function ensureLogin(force = false) {
             throw new Error('登录响应缺少 token');
           }
           wx.setStorageSync('token', data.token);
+          if (data.user) {
+            wx.setStorageSync('user', data.user);
+          }
           resolve(data);
         }).catch(reject);
       },
@@ -106,6 +110,38 @@ function request(path, options = {}) {
 module.exports = {
   request,
   ensureLogin,
+  register(username) {
+    return new Promise((resolve, reject) => {
+      wx.login({
+        success(res) {
+          if (!res.code) {
+            reject(new Error('微信登录失败'));
+            return;
+          }
+          rawRequest('/auth/register', {
+            method: 'POST',
+            data: {
+              code: res.code,
+              username,
+              acceptedTermsVersion: LEGAL.TERMS_VERSION,
+              acceptedPrivacyVersion: LEGAL.PRIVACY_VERSION
+            }
+          }).then((data) => {
+            wx.setStorageSync('token', data.token);
+            wx.setStorageSync('user', data.user);
+            resolve(data);
+          }).catch(reject);
+        },
+        fail: reject
+      });
+    });
+  },
+  getMe() {
+    return request('/auth/me');
+  },
+  isRegisteredUser(user) {
+    return Boolean(user && user.profileCompleted && user.username);
+  },
   wechatLogin(code) {
     return rawRequest('/auth/wechat-login', {
       method: 'POST',
@@ -166,8 +202,7 @@ module.exports = {
   submitContribution(inviteCode, payload) {
     return request(`/invitations/${inviteCode}/contributions`, {
       method: 'POST',
-      data: payload,
-      auth: false
+      data: payload
     });
   },
   getPersonStories(personId) {
