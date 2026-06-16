@@ -1,6 +1,7 @@
 const recorder = require('../../services/recorder');
 const upload = require('../../services/upload');
 const realtime = require('../../services/realtime');
+const auth = require('../../services/auth');
 const CONFIG = require('../../config');
 
 // Synthesized speech is served from the backend origin (BASE_URL without /api).
@@ -29,6 +30,11 @@ Page({
   },
 
   async onLoad() {
+    try {
+      await auth.requireRegistration();
+    } catch (error) {
+      return;
+    }
     const app = getApp();
     this.setData({
       personId: app.globalData.currentPerson.id

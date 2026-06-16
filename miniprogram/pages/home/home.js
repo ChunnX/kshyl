@@ -1,4 +1,14 @@
+const auth = require('../../services/auth');
+
 Page({
+  async onLoad() {
+    try {
+      await auth.requireRegistration();
+    } catch (error) {
+      // Redirected to registration.
+    }
+  },
+
   goConversation() {
     wx.navigateTo({
       url: '/pages/conversation/conversation'

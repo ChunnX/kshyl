@@ -1,4 +1,5 @@
 const api = require('../../services/api');
+const auth = require('../../services/auth');
 const CONFIG = require('../../config');
 
 // Files are served from the backend origin (BASE_URL without the trailing /api).
@@ -13,7 +14,12 @@ Page({
     generating: false
   },
 
-  onLoad() {
+  async onLoad() {
+    try {
+      await auth.requireRegistration();
+    } catch (error) {
+      return;
+    }
     const app = getApp();
     this.setData({
       personId: app.globalData.currentPerson.id

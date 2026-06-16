@@ -1,4 +1,5 @@
 const api = require('../../services/api');
+const auth = require('../../services/auth');
 
 Page({
   data: {
@@ -10,6 +11,11 @@ Page({
   },
 
   async onLoad() {
+    try {
+      await auth.requireRegistration();
+    } catch (error) {
+      return;
+    }
     const app = getApp();
     this.setData({
       personId: app.globalData.currentPerson.id

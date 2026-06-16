@@ -1,4 +1,5 @@
 const api = require('../../services/api');
+const auth = require('../../services/auth');
 
 Page({
   data: {
@@ -7,7 +8,12 @@ Page({
     newRelation: ''
   },
 
-  onLoad() {
+  async onLoad() {
+    try {
+      await auth.requireRegistration();
+    } catch (error) {
+      return;
+    }
     this.loadPeople();
   },
 

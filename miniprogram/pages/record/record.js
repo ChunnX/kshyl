@@ -1,6 +1,7 @@
 const recorder = require('../../services/recorder');
 const upload = require('../../services/upload');
 const api = require('../../services/api');
+const auth = require('../../services/auth');
 
 Page({
   data: {
@@ -10,7 +11,12 @@ Page({
     personId: 'person_demo_001'
   },
 
-  onLoad() {
+  async onLoad() {
+    try {
+      await auth.requireRegistration();
+    } catch (error) {
+      return;
+    }
     const app = getApp();
     this.setData({
       personId: app.globalData.currentPerson.id

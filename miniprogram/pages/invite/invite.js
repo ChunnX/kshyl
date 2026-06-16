@@ -1,4 +1,5 @@
 const api = require('../../services/api');
+const auth = require('../../services/auth');
 
 Page({
   data: {
@@ -15,15 +16,24 @@ Page({
   async onLoad(options) {
     const code = options.code || '';
     this.setData({ code });
+    try {
+      const user = await auth.requireRegistration(`/pages/invite/invite?code=${encodeURIComponent(code)}`);
+      if (user && user.username && !this.data.contributorName) {
+        this.setData({ contributorName: user.username });
+      }
+    } catch (error) {
+      return;
+    }
     if (code) {
       wx.showLoading({ title: '正在加载邀请...' });
       try {
         const data = await api.getInvitation(code);
+        const user = auth.getStoredUser();
         this.setData({
           invitation: data.invitation,
           theme: data.theme,
           stories: data.stories || [],
-          contributorName: data.invitation.targetName || ''
+          contributorName: this.data.contributorName || (user && user.username) || data.invitation.targetName || ''
         });
       } catch (err) {
         wx.showToast({

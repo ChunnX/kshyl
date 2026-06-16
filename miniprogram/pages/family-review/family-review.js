@@ -1,4 +1,5 @@
 const api = require('../../services/api');
+const auth = require('../../services/auth');
 
 Page({
   data: {
@@ -7,6 +8,11 @@ Page({
   },
 
   async onLoad(options) {
+    try {
+      await auth.requireRegistration();
+    } catch (error) {
+      return;
+    }
     this.setData({
       storyId: options.storyId || ''
     });
