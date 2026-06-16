@@ -1,5 +1,8 @@
 {
   "pages": [
+    "pages/register/register",
+    "pages/legal/user-agreement",
+    "pages/legal/privacy-policy",
     "pages/home/home",
     "pages/family/family",
     "pages/theme/theme",

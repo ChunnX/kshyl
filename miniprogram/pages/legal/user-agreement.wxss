@@ -1,0 +1,21 @@
+.page {
+  min-height: 100vh;
+  padding: 36rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 28rpx;
+}
+
+.content {
+  display: block;
+  white-space: pre-wrap;
+  font-size: 28rpx;
+  line-height: 1.8;
+  color: #334155;
+}

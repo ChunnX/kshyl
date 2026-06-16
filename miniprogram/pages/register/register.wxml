@@ -1,0 +1,29 @@
+<view class="page">
+  <view class="header">
+    <view class="title">开始使用家庭记忆</view>
+    <view class="subtitle">只需要填写一个用户名，用于展示和共创署名。</view>
+  </view>
+
+  <view class="form">
+    <view class="label">用户名</view>
+    <input class="input" value="{{username}}" bindinput="onUsernameInput" maxlength="20" placeholder="例如：小明、妈妈、外孙女" />
+
+    <checkbox-group bindchange="toggleTerms" class="check-row">
+      <label>
+        <checkbox value="terms" checked="{{acceptedTerms}}" />
+        <text>我已阅读并同意</text>
+      </label>
+      <text class="link" bindtap="openTerms">《用户协议》</text>
+    </checkbox-group>
+
+    <checkbox-group bindchange="togglePrivacy" class="check-row">
+      <label>
+        <checkbox value="privacy" checked="{{acceptedPrivacy}}" />
+        <text>我已阅读并同意</text>
+      </label>
+      <text class="link" bindtap="openPrivacy">《隐私政策》</text>
+    </checkbox-group>
+
+    <button class="primary-button" loading="{{loading}}" bindtap="submit">同意并开始</button>
+  </view>
+</view>

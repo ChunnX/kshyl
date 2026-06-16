@@ -1,0 +1,60 @@
+.page {
+  min-height: 100vh;
+  padding: 64rpx 36rpx;
+  background: #f0f9ff;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 48rpx;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.subtitle {
+  margin-top: 16rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.input {
+  height: 96rpx;
+  padding: 0 28rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  border: 2rpx solid #bae6fd;
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+.check-row {
+  font-size: 26rpx;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.link {
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.primary-button {
+  margin-top: 20rpx;
+}
